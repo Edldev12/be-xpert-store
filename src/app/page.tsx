@@ -207,7 +207,7 @@ export default async function Home() {
           </Link>
 
           <Link
-            href="/signin"
+            href="/login"
             className="inline-flex h-10 items-center justify-center rounded-md border px-4 text-sm font-medium hover:bg-accent"
           >
             Sign In

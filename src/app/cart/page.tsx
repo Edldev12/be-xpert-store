@@ -94,6 +94,7 @@ export default function CartPage() {
                         alt={product.title}
                         fill
                         unoptimized
+                        loading="lazy"
                         sizes="(max-width: 640px) 100vw, 120px"
                         className="object-contain p-2"
                       />
