@@ -1,10 +1,10 @@
-
 "use client"
 
 import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useState,
 } from "react"
@@ -12,9 +12,13 @@ import type { ReactNode } from "react"
 import type { Product } from "@/types/product"
 import type { CartItem } from "@/types/cart"
 
+const CART_STORAGE_KEY = "be-xpert-cart"
+const MAX_QUANTITY = 99
+
 interface CartContextValue {
   items: CartItem[]
   itemCount: number
+  subtotal: number
   totalPrice: number
   addToCart: (product: Product, quantity?: number) => void
   removeFromCart: (productId: number) => void
@@ -24,12 +28,107 @@ interface CartContextValue {
 
 const CartContext = createContext<CartContextValue | undefined>(undefined)
 
+function isValidCartItem(value: unknown): value is CartItem {
+  if (!value || typeof value !== "object") return false
+
+  const item = value as Partial<CartItem>
+  const product = item.product
+
+  return (
+    !!product &&
+    typeof product === "object" &&
+    Number.isInteger(product.id) &&
+    product.id > 0 &&
+    typeof product.title === "string" &&
+    Number.isFinite(Number(product.price)) &&
+    Number(product.price) >= 0 &&
+    Number.isInteger(item.quantity) &&
+    Number(item.quantity) >= 1 &&
+    Number(item.quantity) <= MAX_QUANTITY
+  )
+}
+
 export function CartProvider({ children }: { children: ReactNode }) {
   const [items, setItems] = useState<CartItem[]>([])
+  const [isHydrated, setIsHydrated] = useState(false)
+
+  // Restore the cart when the app loads in the browser.
+  useEffect(() => {
+    let cancelled = false
+
+    const restoreCart = async () => {
+      try {
+        const savedCart = localStorage.getItem(CART_STORAGE_KEY)
+
+        if (savedCart) {
+          const parsed: unknown = JSON.parse(savedCart)
+
+          if (Array.isArray(parsed)) {
+            const validItems = parsed.filter(isValidCartItem)
+
+            const mergedItems = validItems.reduce<CartItem[]>(
+              (result, item) => {
+                const existing = result.find(
+                  (entry) => entry.product.id === item.product.id,
+                )
+
+                if (existing) {
+                  existing.quantity = Math.min(
+                    MAX_QUANTITY,
+                    existing.quantity + item.quantity,
+                  )
+                } else {
+                  result.push({
+                    product: item.product,
+                    quantity: item.quantity,
+                  })
+                }
+
+                return result
+              },
+              [],
+            )
+
+            if (!cancelled) {
+              setItems(mergedItems)
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Unable to restore the shopping cart:", error)
+      } finally {
+        if (!cancelled) {
+          setIsHydrated(true)
+        }
+      }
+    }
+
+    void restoreCart()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
+  // Save changes only after the saved cart has been restored.
+  useEffect(() => {
+    if (!isHydrated) return
+
+    try {
+      localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(items))
+    } catch (error) {
+      console.error("Unable to save the shopping cart:", error)
+    }
+  }, [items, isHydrated])
 
   const addToCart = useCallback(
     (product: Product, quantity = 1) => {
-      const safeQuantity = Math.min(99, Math.max(1, Math.floor(quantity)))
+      if (!Number.isFinite(quantity) || quantity < 1) return
+
+      const safeQuantity = Math.min(
+        MAX_QUANTITY,
+        Math.floor(quantity),
+      )
 
       setItems((currentItems) => {
         const existing = currentItems.find(
@@ -41,7 +140,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
             item.product.id === product.id
               ? {
                 ...item,
-                quantity: Math.min(99, item.quantity + safeQuantity),
+                quantity: Math.min(
+                  MAX_QUANTITY,
+                  item.quantity + safeQuantity,
+                ),
               }
               : item,
           )
@@ -61,12 +163,12 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const updateQuantity = useCallback(
     (productId: number, quantity: number) => {
-      if (quantity < 1) {
+      if (!Number.isFinite(quantity) || quantity < 1) {
         removeFromCart(productId)
         return
       }
 
-      const safeQuantity = Math.min(99, Math.floor(quantity))
+      const safeQuantity = Math.min(MAX_QUANTITY, Math.floor(quantity))
 
       setItems((currentItems) =>
         currentItems.map((item) =>
@@ -79,19 +181,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [removeFromCart],
   )
 
-  const clearCart = useCallback(() => setItems([]), [])
+  const clearCart = useCallback(() => {
+    setItems([])
+  }, [])
 
   const itemCount = items.reduce((sum, item) => sum + item.quantity, 0)
 
-  const totalPrice = items.reduce(
+  const subtotal = items.reduce(
     (sum, item) => sum + Number(item.product.price) * item.quantity,
     0,
   )
+
+  const totalPrice = subtotal
 
   const value = useMemo(
     () => ({
       items,
       itemCount,
+      subtotal,
       totalPrice,
       addToCart,
       removeFromCart,
@@ -101,6 +208,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     [
       items,
       itemCount,
+      subtotal,
       totalPrice,
       addToCart,
       removeFromCart,
