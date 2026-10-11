@@ -2,84 +2,69 @@
 
 A modern, responsive e-commerce web application developed as an individual capstone project for the **BE-XPERT Frontend Development** course.
 
-The application uses Next.js, TypeScript, Tailwind CSS, shadcn/ui, and the EscuelaJS API to provide a customer storefront, shopping cart, authentication, simulated checkout, and administrative dashboard.
+The application uses Next.js, TypeScript, Tailwind CSS, shadcn/ui, and the EscuelaJS API to provide a customer storefront, shopping cart, authentication, simulated checkout, and an administrative dashboard.
 
 ## Project Overview
 
-The goal of this project is to build a functional, maintainable, and responsive e-commerce application that demonstrates frontend development skills, API integration, authentication, state management, accessibility, and responsive UI design.
+**Project Type:** Individual Capstone Project  
+**Project Status:** In Development  
+**API:** [EscuelaJS API Documentation](https://api.escuelajs.co/docs)
 
-**Project type:** Individual Capstone Project  
-**Project status:** In Development  
-**API:** [EscuelaJS API](https://api.escuelajs.co/docs)
+The goal is to build a functional, maintainable, and responsive e-commerce application demonstrating frontend development, API integration, authentication, state management, accessibility, and responsive design.
 
 ## Features
 
 ### Customer Storefront
-
-- Responsive homepage with product discovery.
-- Products retrieved from the EscuelaJS API.
+- Responsive homepage with real API products and categories.
 - Product search by name.
-- Category filtering.
-- Price range filtering.
-- Sorting by price, name, and creation date where supported by the available data.
-- Individual product detail pages.
-- Related product recommendations.
+- Category and price filtering.
+- Sorting by price, name, and creation date where supported.
+- Product detail pages with descriptions, images, and related products.
 - Dynamic category listing and category detail pages.
 - Loading, error, empty, and not-found states.
 
 ### Shopping Cart
-
-- Add products to the cart.
-- Increase and decrease product quantities.
-- Remove individual products.
-- Clear the entire cart.
-- Display item counts, subtotals, and totals.
-- Persist cart contents using browser localStorage.
+- Add and remove products.
+- Increase and decrease quantities.
 - Prevent duplicate cart rows for the same product.
-- Preserve the cart when guests are redirected to authentication.
+- Calculate item counts, subtotals, and totals.
+- Persist cart contents using localStorage.
+- Preserve the cart when guests are redirected to login.
 
-### Authentication and User Profile
-
-- User registration.
-- Password and confirmation validation.
-- Email availability checks where supported by the API.
-- Login using the EscuelaJS authentication endpoint.
-- Appropriate invalid-credential and API error messages.
-- Profile information retrieved from the API.
-- Logout functionality.
-- Redirect guests to login when accessing protected customer routes.
+### Authentication and Profile
+- User registration and validation.
+- Email availability checks where supported.
+- Login using the EscuelaJS API.
+- Invalid-credential and API error handling.
+- Authenticated user profile.
+- Logout and protected customer routes.
 
 ### Simulated Checkout
+- Require login before checkout.
+- Collect name, email, phone number, delivery address, and city.
+- Validate required fields and display an order summary.
+- Show an order confirmation after simulated checkout.
+- Clear the cart after successful checkout.
 
-- Require authentication before checkout.
-- Collect customer name, email, phone number, delivery address, and city.
-- Validate required fields.
-- Display an order summary and total.
-- Show a checkout confirmation page.
-- Clear the cart after successful simulated checkout.
-- Do not claim that real payments, shipping, or backend order creation have occurred.
+**Important:** Checkout is simulated. No real payment, shipping, or backend order processing is claimed.
 
 ### Admin Dashboard
-
-- Dashboard overview with statistics calculated from available API data.
-- Product listing, search, creation, and editing where supported.
+- Overview statistics based on available API data.
+- Product listing, creation, and editing where supported.
 - Category listing, creation, and editing where supported.
-- User listing and details where permitted by the API.
-- Responsive desktop sidebar and mobile navigation.
-- Success, error, loading, and unavailable states.
-- Safe handling of shared API records.
+- User information where API permissions allow.
+- Responsive dashboard navigation.
+- Loading, success, error, and unavailable states.
 
-**Authorization note:** Administrator permissions must be verified against the actual API capabilities. A frontend-only access flag or password is not secure production authorization. Any development-only access mechanism will be clearly documented.
+**Authorization limitation:** Administrator access must be evaluated against the API's actual capabilities. A frontend-only password or localStorage flag is not secure production authorization.
 
 ### UI and Accessibility
-
 - Mobile-first responsive design.
-- Light, dark, and system theme support.
-- Accessible navigation and form labels.
-- Keyboard-friendly controls and visible focus indicators.
-- Semantic HTML and appropriate image descriptions.
-- Page metadata and dynamic product/category metadata where practical.
-- Minimal, consistent, professional visual design.
+- Light, dark, and system themes.
+- Accessible form labels and keyboard navigation.
+- Visible focus indicators and semantic HTML.
+- Meaningful image alt text.
+- SEO metadata and a consistent, professional interface.
 
 ## Technology Stack
 
@@ -91,18 +76,17 @@ The goal of this project is to build a functional, maintainable, and responsive 
 | shadcn/ui | Reusable UI components |
 | next-themes | Theme management |
 | EscuelaJS API | Products, categories, and authentication |
-| localStorage | Cart persistence |
-| Git and GitHub | Version control and source hosting |
+| localStorage | Shopping cart persistence |
+| Git and GitHub | Version control |
 | Vercel | Planned deployment |
 
 ## API Integration
 
-**API base URL:** `https://api.escuelajs.co/api/v1`
+**Base URL:** `https://api.escuelajs.co/api/v1`
 
-Official documentation: [https://api.escuelajs.co/docs](https://api.escuelajs.co/docs)
+**Documentation:** https://api.escuelajs.co/docs
 
 ### Products
-
 - `GET /products`
 - `GET /products/{id}`
 - `GET /products/slug/{slug}`
@@ -111,7 +95,6 @@ Official documentation: [https://api.escuelajs.co/docs](https://api.escuelajs.co
 - `PUT /products/{id}`
 
 ### Categories
-
 - `GET /categories`
 - `GET /categories/{id}`
 - `GET /categories/slug/{slug}`
@@ -120,7 +103,6 @@ Official documentation: [https://api.escuelajs.co/docs](https://api.escuelajs.co
 - `PUT /categories/{id}`
 
 ### Authentication and Users
-
 - `POST /users`
 - `POST /users/is-available`
 - `POST /auth/login`
@@ -129,11 +111,11 @@ Official documentation: [https://api.escuelajs.co/docs](https://api.escuelajs.co
 - `GET /users`
 - `GET /users/{id}`
 
-Endpoint behavior, request bodies, permissions, and response structures will be verified against the official API documentation during implementation.
+Request bodies, response structures, and permissions will be verified against the official documentation.
 
-The application will use a centralized API service layer, handle failed requests gracefully, and avoid fabricated fallback data.
+The application will use a centralized API service and handle failures without replacing missing data with fabricated products.
 
-**Shared API safety:** Existing shared products and categories will not be modified or deleted without explicit authorization. Write-operation testing will use records created specifically for testing wherever safe isolation is possible.
+**Shared API safety:** Existing shared products and categories will not be modified or deleted without explicit authorization. Write operations will be tested using isolated test records wherever possible.
 
 ## Application Routes
 
@@ -142,16 +124,16 @@ The application will use a centralized API service layer, handle failed requests
 | Route | Purpose |
 |---|---|
 | `/` | Homepage |
-| `/products` | Product listing, search, filtering, sorting |
+| `/products` | Product discovery |
 | `/products/[id]` | Product details |
 | `/categories` | Category listing |
-| `/categories/[slug]` | Category details and products |
+| `/categories/[slug]` | Category products |
 | `/cart` | Shopping cart |
 | `/checkout` | Protected simulated checkout |
-| `/checkout/success` | Protected order confirmation |
-| `/login` | User login |
-| `/register` | User registration |
-| `/profile` | Protected user profile |
+| `/checkout/success` | Order confirmation |
+| `/login` | Login |
+| `/register` | Registration |
+| `/profile` | User profile |
 
 ### Admin Routes
 
@@ -159,35 +141,24 @@ The application will use a centralized API service layer, handle failed requests
 |---|---|
 | `/admin` | Dashboard overview |
 | `/admin/products` | Product management |
-| `/admin/products/new` | Create a product |
-| `/admin/products/[id]` | View product details |
-| `/admin/products/[id]/edit` | Edit a product |
+| `/admin/products/new` | Create product |
+| `/admin/products/[id]` | Product details |
+| `/admin/products/[id]/edit` | Edit product |
 | `/admin/categories` | Category management |
-| `/admin/categories/new` | Create a category |
-| `/admin/categories/[id]/edit` | Edit a category |
+| `/admin/categories/new` | Create category |
+| `/admin/categories/[id]/edit` | Edit category |
 | `/admin/users` | User management |
-| `/admin/users/[id]` | View user details |
+| `/admin/users/[id]` | User details |
 
 ## Project Structure
 
-The planned project structure is:
+The following is the planned structure. Files and folders will be added as features are implemented.
 
 ```text
 be-xpert-ecommerce/
 ├── public/
 ├── src/
 │   ├── app/
-│   │   ├── admin/
-│   │   ├── cart/
-│   │   ├── categories/
-│   │   ├── checkout/
-│   │   ├── login/
-│   │   ├── products/
-│   │   ├── profile/
-│   │   ├── register/
-│   │   ├── globals.css
-│   │   ├── layout.tsx
-│   │   └── page.tsx
 │   ├── components/
 │   │   ├── admin/
 │   │   ├── auth/
@@ -199,31 +170,25 @@ be-xpert-ecommerce/
 │   ├── contexts/
 │   ├── hooks/
 │   ├── lib/
-│   │   ├── api.ts
-│   │   └── utils.ts
 │   └── types/
 ├── .env.example
 ├── .gitignore
-├── components.json
 ├── package.json
 ├── README.md
 └── tsconfig.json
 ```
 
-This is the planned organization; folders and files will be added as their features are implemented.
-
 ## Getting Started
 
 ### Prerequisites
-
-- Node.js LTS.
-- npm.
-- Git.
-- Visual Studio Code or another code editor.
+- Node.js LTS
+- npm
+- Git
+- Visual Studio Code or another code editor
 
 ### Installation
 
-Clone the repository after it has been created:
+After cloning the GitHub repository:
 
 ```bash
 git clone YOUR_GITHUB_REPOSITORY_URL
@@ -231,13 +196,13 @@ cd be-xpert-ecommerce
 npm install
 ```
 
-Configure the API URL in a local `.env.local` file:
+Create a `.env.local` file in the project root:
 
 ```env
 NEXT_PUBLIC_API_URL=https://api.escuelajs.co/api/v1
 ```
 
-Do not commit `.env.local` or any secrets to GitHub. The example environment file should contain only safe placeholders and public configuration.
+Do not commit `.env.local` or private credentials to GitHub.
 
 Start the development server:
 
@@ -245,7 +210,7 @@ Start the development server:
 npm run dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000).
+Open http://localhost:3000 in your browser.
 
 ### Available Scripts
 
@@ -253,75 +218,67 @@ Open [http://localhost:3000](http://localhost:3000).
 npm run dev
 npm run build
 npm run start
-npm run lint
 ```
 
-Use scripts that are actually defined in `package.json`. If the installed Next.js version uses a different lint command, update this documentation accordingly.
+Use `npm run lint` if that script is configured in `package.json`.
 
 ## Testing Checklist
 
 ### Storefront
-
 - [ ] Homepage loads real API data.
-- [ ] Product search works.
-- [ ] Category and price filters work.
-- [ ] Sorting works.
-- [ ] Product detail and related product pages work.
-- [ ] Missing products and images are handled gracefully.
+- [ ] Product search, filters, and sorting work.
+- [ ] Product details and related products load.
+- [ ] Missing products and images are handled.
 
-### Shopping Cart and Checkout
-
-- [ ] Products can be added, removed, and updated.
+### Cart and Checkout
+- [ ] Add, remove, and quantity controls work.
 - [ ] Cart totals are correct.
 - [ ] Cart persists after refresh.
 - [ ] Guest checkout redirects to login.
 - [ ] Checkout validates required fields.
 - [ ] Successful simulated checkout clears the cart.
-- [ ] Guests cannot directly access protected checkout routes.
+- [ ] Protected routes reject unauthenticated guests.
 
 ### Authentication
-
-- [ ] Registration validates and submits correctly.
+- [ ] Registration validates and submits.
 - [ ] Login handles invalid credentials.
-- [ ] Profile data loads for authenticated users.
+- [ ] Profile data loads correctly.
 - [ ] Logout works.
-- [ ] Protected profile routes redirect guests appropriately.
+- [ ] Protected profile routes redirect guests.
 
 ### Admin Dashboard
-
-- [ ] Statistics reflect actual API responses.
+- [ ] Statistics use actual API data.
 - [ ] Product and category management work where supported.
-- [ ] User information is shown only where permitted.
+- [ ] User information respects API permissions.
 - [ ] Shared records are protected from unsafe modifications.
-- [ ] Admin authorization limitations are documented.
+- [ ] Authorization limitations are documented.
 
 ### Quality and Deployment
-
-- [ ] Responsive layout works on mobile, tablet, and desktop.
+- [ ] Mobile, tablet, and desktop layouts work.
 - [ ] Light, dark, and system themes work.
 - [ ] Loading, error, and empty states are implemented.
-- [ ] Accessible labels, focus indicators, and navigation are verified.
+- [ ] Accessibility is checked.
 - [ ] Production build succeeds.
-- [ ] README and API documentation are complete.
-- [ ] Live deployment is tested.
+- [ ] Documentation is complete.
+- [ ] Deployment is tested.
 
 ## Security and Limitations
 
-- The cart is client-side state stored in localStorage.
-- Checkout is a simulation, not a payment-processing system.
-- A public third-party API does not guarantee production-grade authentication or administrator authorization.
-- Client-side route protection is not a replacement for trusted server-side authorization.
-- Tokens and passwords must not be displayed or logged.
-- API access limitations will be documented honestly.
+- The shopping cart is stored client-side in localStorage.
+- Checkout is simulated rather than a real payment transaction.
+- The public API does not automatically provide production-grade administrator authorization.
+- Client-side route protection alone is insufficient for production.
+- Passwords and tokens must not be exposed in the interface or logs.
+- API limitations will be documented honestly.
 
-## Project Deliverables
+## Deliverables
 
-1. GitHub repository containing the complete source code.
+1. GitHub repository with complete source code.
 2. Working customer storefront.
-3. Functional administrative dashboard within API limitations.
-4. Project README and API integration documentation.
+3. Admin dashboard within API capabilities.
+4. Project README and API documentation.
 5. Public deployment URL when available.
-6. Project presentation explaining architecture, functionality, testing, and limitations.
+6. Project presentation.
 
 ## Project Links
 
@@ -336,6 +293,4 @@ BE-XPERT Frontend Development — Individual Capstone Project
 
 ---
 
-*This README describes the project requirements and planned implementation. Features will be marked complete only after they have been implemented and tested.*
-#   e c c o m m e r c e  
- 
+*This README describes the requirements and planned implementation. Features will be marked complete only after implementation and testing.*
