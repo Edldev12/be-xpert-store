@@ -12,7 +12,14 @@ interface ProductDiscoveryProps {
   categories: Category[]
 }
 
-type SortOption = "default" | "price-asc" | "price-desc" | "name-asc" | "name-desc" | "date-newest" | "date-oldest"
+type SortOption =
+  | "default"
+  | "price-asc"
+  | "price-desc"
+  | "name-asc"
+  | "name-desc"
+  | "date-newest"
+  | "date-oldest"
 
 export function ProductDiscovery({
   products,
@@ -74,21 +81,20 @@ export function ProductDiscovery({
         result.sort((a, b) => b.title.localeCompare(a.title))
         break
       case "date-newest":
-        result.sort((a, b) => {
-          const dateA = Date.parse(a.creationAt ?? "")
-          const dateB = Date.parse(b.creationAt ?? "")
-          if (!Number.isFinite(dateA)) return 1
-          if (!Number.isFinite(dateB)) return -1
-          return dateB - dateA
-        })
-        break
       case "date-oldest":
         result.sort((a, b) => {
           const dateA = Date.parse(a.creationAt ?? "")
           const dateB = Date.parse(b.creationAt ?? "")
-          if (!Number.isFinite(dateA)) return 1
-          if (!Number.isFinite(dateB)) return -1
-          return dateA - dateB
+          const validA = Number.isFinite(dateA)
+          const validB = Number.isFinite(dateB)
+
+          if (!validA && !validB) return 0
+          if (!validA) return 1
+          if (!validB) return -1
+
+          return sort === "date-newest"
+            ? dateB - dateA
+            : dateA - dateB
         })
         break
     }
@@ -114,27 +120,52 @@ export function ProductDiscovery({
   return (
     <div className="space-y-6">
       <div className="grid gap-4 rounded-xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-4">
+        {/* Search and Clear Filters */}
         <div className="sm:col-span-2 lg:col-span-4">
-          <label htmlFor="product-search" className="mb-2 block text-sm font-medium">
-            Search products
-          </label>
-          <div className="relative">
-            <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-            <input
-              id="product-search"
-              type="search"
-              value={search}
-              onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by product name..."
-              className="h-10 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
-            />
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="min-w-0 flex-1">
+              <label
+                htmlFor="product-search"
+                className="mb-2 block text-sm font-medium"
+              >
+                Search products
+              </label>
+
+              <div className="relative">
+                <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+
+                <input
+                  id="product-search"
+                  type="search"
+                  value={search}
+                  onChange={(event) => setSearch(event.target.value)}
+                  placeholder="Search by product name..."
+                  className="h-10 w-full rounded-md border bg-background pl-9 pr-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                />
+              </div>
+            </div>
+
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full sm:w-auto sm:shrink-0"
+              onClick={clearFilters}
+            >
+              <X className="mr-2 size-4" />
+              Clear filters
+            </Button>
           </div>
         </div>
 
+        {/* Category */}
         <div>
-          <label htmlFor="category-filter" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="category-filter"
+            className="mb-2 block text-sm font-medium"
+          >
             Category
           </label>
+
           <select
             id="category-filter"
             value={categoryId}
@@ -150,10 +181,15 @@ export function ProductDiscovery({
           </select>
         </div>
 
+        {/* Minimum Price */}
         <div>
-          <label htmlFor="min-price" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="min-price"
+            className="mb-2 block text-sm font-medium"
+          >
             Minimum price ($)
           </label>
+
           <input
             id="min-price"
             type="number"
@@ -166,10 +202,15 @@ export function ProductDiscovery({
           />
         </div>
 
+        {/* Maximum Price */}
         <div>
-          <label htmlFor="max-price" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="max-price"
+            className="mb-2 block text-sm font-medium"
+          >
             Maximum price ($)
           </label>
+
           <input
             id="max-price"
             type="number"
@@ -182,14 +223,21 @@ export function ProductDiscovery({
           />
         </div>
 
+        {/* Sorting */}
         <div>
-          <label htmlFor="product-sort" className="mb-2 block text-sm font-medium">
+          <label
+            htmlFor="product-sort"
+            className="mb-2 block text-sm font-medium"
+          >
             Sort products
           </label>
+
           <select
             id="product-sort"
             value={sort}
-            onChange={(event) => setSort(event.target.value as SortOption)}
+            onChange={(event) =>
+              setSort(event.target.value as SortOption)
+            }
             className="h-10 w-full rounded-md border bg-background px-3 text-sm"
           >
             <option value="default">Default order</option>
@@ -201,25 +249,27 @@ export function ProductDiscovery({
             <option value="date-oldest">Oldest first</option>
           </select>
         </div>
-
-        <div className="flex items-end">
-          <Button type="button" variant="outline" className="w-full" onClick={clearFilters}>
-            <X className="mr-2 size-4" />
-            Clear filters
-          </Button>
-        </div>
       </div>
 
+      {/* Results Count */}
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-sm text-muted-foreground" aria-live="polite">
+        <p
+          className="text-sm text-muted-foreground"
+          aria-live="polite"
+        >
           <SlidersHorizontal className="mr-2 inline size-4" />
-          Showing {invalidPriceRange ? 0 : filteredProducts.length} of {products.length} products
+          Showing{" "}
+          {invalidPriceRange ? 0 : filteredProducts.length} of{" "}
+          {products.length} products
         </p>
       </div>
 
+      {/* Product Results */}
       {invalidPriceRange ? (
         <div className="rounded-xl border p-10 text-center">
-          <h2 className="text-xl font-semibold">Invalid price range</h2>
+          <h2 className="text-xl font-semibold">
+            Invalid price range
+          </h2>
           <p className="mt-2 text-muted-foreground">
             The minimum price cannot be greater than the maximum price.
           </p>
@@ -230,7 +280,13 @@ export function ProductDiscovery({
           <p className="mt-2 text-muted-foreground">
             Try another search term or adjust your filters.
           </p>
-          <Button type="button" variant="outline" className="mt-5" onClick={clearFilters}>
+
+          <Button
+            type="button"
+            variant="outline"
+            className="mt-5"
+            onClick={clearFilters}
+          >
             Clear filters
           </Button>
         </div>
