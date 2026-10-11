@@ -4,7 +4,7 @@ import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { ArrowLeft, ShoppingBag } from "lucide-react"
-
+import { useEffect } from "react";
 import { useCart } from "@/components/cart-provider"
 import { Button } from "@/components/ui/button"
 
@@ -30,6 +30,13 @@ function formatPrice(price: number) {
 
 export default function CheckoutPage() {
   const router = useRouter()
+  useEffect(() => {
+    const token = sessionStorage.getItem("be-xpert-access-token");
+
+    if (!token) {
+      router.replace("/login?next=/checkout");
+    }
+  }, [router]);
   const { items, itemCount, subtotal, totalPrice, clearCart } = useCart()
 
   const [form, setForm] = useState<CheckoutForm>(initialForm)
