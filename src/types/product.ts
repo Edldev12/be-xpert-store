@@ -11,6 +11,7 @@ export interface Product {
   description: string
   images: string[]
   category: Category
+  creationAt?: string
 }
 
 export interface ProductQuery {
@@ -18,4 +19,3 @@ export interface ProductQuery {
   offset?: number
   categoryId?: number
 }
-

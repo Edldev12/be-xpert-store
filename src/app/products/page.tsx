@@ -1,67 +1,90 @@
-import { getProducts } from "@/lib/api"
-import { ProductCard } from "@/components/product-card"
+import Link from "next/link"
 
+import { getCategories, getProducts } from "@/lib/api"
+import { ProductDiscovery } from "@/components/product-discovery"
+import type { Category, Product } from "@/types/product"
 
-export const metadata = {
-  title: "Products | BE-XPERT Store",
-  description: "Explore products available at BE-XPERT Store.",
-}
+export const instant = false
 
 export default async function ProductsPage() {
-  let products
+  let products: Product[]
+  let categories: Category[]
 
   try {
-    products = await getProducts({ limit: 12 })
-  } catch {
-    return (
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold">Our Products</h1>
+    const results = await Promise.all([
+      getProducts({ limit: 100 }),
+      getCategories(),
+    ])
 
-        <div
-          role="alert"
-          className="mt-8 rounded-xl border border-destructive/30 bg-destructive/5 p-6"
-        >
-          <h2 className="font-semibold">Unable to load products</h2>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Please check your internet connection and try again later.
-          </p>
-        </div>
-      </section>
-    )
-  }
+    products = results[0]
+    categories = results[1]
+  } catch (error) {
+    console.error("Failed to load products:", error)
 
-  if (products.length === 0) {
     return (
-      <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <h1 className="text-3xl font-bold">Our Products</h1>
-        <p className="mt-6 text-muted-foreground">
-          No products are available right now. Please check back later.
+      <section className="mx-auto max-w-7xl px-4 py-16 text-center sm:px-6 lg:px-8">
+        <h1 className="text-3xl font-bold tracking-tight">Our Products</h1>
+        <p className="mt-4 text-muted-foreground">
+          We couldn&apos;t load the products right now. Please try again later.
         </p>
+        <Link
+          href="/"
+          className="mt-6 inline-flex rounded-md bg-primary px-4 py-2 text-primary-foreground hover:bg-primary/90"
+        >
+          Back to Home
+        </Link>
       </section>
     )
   }
+
+  const validProducts = Array.isArray(products)
+    ? products.filter(
+      (product) =>
+        product &&
+        Number.isInteger(product.id) &&
+        product.id > 0 &&
+        typeof product.title === "string" &&
+        Number.isFinite(Number(product.price)) &&
+        Number(product.price) >= 0
+    )
+    : []
+
+  const validCategories = Array.isArray(categories)
+    ? categories.filter(
+      (category) =>
+        category &&
+        Number.isInteger(category.id) &&
+        category.id > 0 &&
+        typeof category.name === "string" &&
+        category.name.trim().length > 0
+    )
+    : []
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
       <div className="mb-8">
-        <p className="text-sm font-medium text-primary">Discover something new</p>
+        <p className="text-sm font-medium text-primary">Discover your next favorite</p>
         <h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-4xl">
           Our Products
         </h1>
         <p className="mt-3 text-muted-foreground">
-          Explore our collection and find something you love.
+          Search, filter, and sort products to find exactly what you need.
         </p>
       </div>
 
-      <p className="mb-4 text-sm text-muted-foreground">
-        {products.length} products
-      </p>
-
-      <div className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
-        {products.map((product) => (
-          <ProductCard key={product.id} product={product} />
-        ))}
-      </div>
+      {validProducts.length === 0 ? (
+        <div className="rounded-xl border p-10 text-center">
+          <h2 className="text-xl font-semibold">No products available</h2>
+          <p className="mt-2 text-muted-foreground">
+            Please check back later to explore our products.
+          </p>
+        </div>
+      ) : (
+        <ProductDiscovery
+          products={validProducts}
+          categories={validCategories}
+        />
+      )}
     </section>
   )
 }
