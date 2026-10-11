@@ -1,200 +1,105 @@
-# BE-XPERT Modern E-Commerce Web Application
+# BE-XPERT Store 🛍️
 
-A modern, responsive e-commerce web application developed as an individual capstone project for the **BE-XPERT Frontend Development** course.
+A modern, responsive e-commerce web application built with Next.js and React. BE-XPERT Store lets users browse products, explore categories, view product details, manage a shopping cart, register, log in, and access their profile.
 
-The application uses Next.js, TypeScript, Tailwind CSS, shadcn/ui, and the EscuelaJS API to provide a customer storefront, shopping cart, authentication, simulated checkout, and an administrative dashboard.
+## 🚀 Features
 
-## Project Overview
+### 🛒 Product Catalog
+- Browse products fetched from the EscuelaJS API.
+- View product cards and detailed product information.
+- Explore product categories and category-specific pages.
+- Responsive product layouts.
+- Loading, error, and empty states for a better user experience.
 
-**Project Type:** Individual Capstone Project  
-**Project Status:** In Development  
-**API:** [EscuelaJS API Documentation](https://api.escuelajs.co/docs)
+### 🛍️ Shopping Cart
+- View items added to the cart.
+- Update product quantities and remove items.
+- Calculate the cart total.
+- Continue to checkout from the cart.
 
-The goal is to build a functional, maintainable, and responsive e-commerce application demonstrating frontend development, API integration, authentication, state management, accessibility, and responsive design.
+### 🔐 Authentication
+- Register a new account.
+- Log in using an email address and password.
+- Store authentication tokens in browser session storage.
+- Redirect users back to their requested page after login.
+- Require login before continuing to checkout.
+- Log out of the current session.
 
-## Features
+### 👤 User Profile
+- Retrieve authenticated user profile information.
+- Display a profile avatar.
+- Edit the avatar URL using the profile interface.
+- Protect profile access with a login redirect.
 
-### Customer Storefront
-- Responsive homepage with real API products and categories.
-- Product search by name.
-- Category and price filtering.
-- Sorting by price, name, and creation date where supported.
-- Product detail pages with descriptions, images, and related products.
-- Dynamic category listing and category detail pages.
-- Loading, error, empty, and not-found states.
+**Note:** Avatar changes are currently stored locally in the browser and are not synchronized with the server.
 
-### Shopping Cart
-- Add and remove products.
-- Increase and decrease quantities.
-- Prevent duplicate cart rows for the same product.
-- Calculate item counts, subtotals, and totals.
-- Persist cart contents using localStorage.
-- Preserve the cart when guests are redirected to login.
+### 🎨 User Interface
+- Responsive design for desktop and mobile devices.
+- Light and dark theme toggle.
+- Desktop navigation.
+- Fixed bottom navigation on mobile devices.
+- Consistent styling and accessible form feedback.
 
-### Authentication and Profile
-- User registration and validation.
-- Email availability checks where supported.
-- Login using the EscuelaJS API.
-- Invalid-credential and API error handling.
-- Authenticated user profile.
-- Logout and protected customer routes.
+## 🧰 Tech Stack
 
-### Simulated Checkout
-- Require login before checkout.
-- Collect name, email, phone number, delivery address, and city.
-- Validate required fields and display an order summary.
-- Show an order confirmation after simulated checkout.
-- Clear the cart after successful checkout.
+- **Framework:** Next.js
+- **Frontend:** React
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS
+- **API:** [EscuelaJS API](https://api.escuelajs.co/api/v1)
+- **Authentication:** API-based login and browser session storage
+- **Version Control:** Git and GitHub
 
-**Important:** Checkout is simulated. No real payment, shipping, or backend order processing is claimed.
+## 🌐 API
 
-### Admin Dashboard
-- Overview statistics based on available API data.
-- Product listing, creation, and editing where supported.
-- Category listing, creation, and editing where supported.
-- User information where API permissions allow.
-- Responsive dashboard navigation.
-- Loading, success, error, and unavailable states.
+This project uses the public EscuelaJS API for product data, categories, and authentication.
 
-**Authorization limitation:** Administrator access must be evaluated against the API's actual capabilities. A frontend-only password or localStorage flag is not secure production authorization.
+Base URL:
 
-### UI and Accessibility
-- Mobile-first responsive design.
-- Light, dark, and system themes.
-- Accessible form labels and keyboard navigation.
-- Visible focus indicators and semantic HTML.
-- Meaningful image alt text.
-- SEO metadata and a consistent, professional interface.
+`https://api.escuelajs.co/api/v1`
 
-## Technology Stack
+Endpoints used by the application include:
 
-| Technology | Purpose |
+| Endpoint | Purpose |
 |---|---|
-| Next.js | Application framework and routing |
-| TypeScript | Type safety |
-| Tailwind CSS | Responsive styling |
-| shadcn/ui | Reusable UI components |
-| next-themes | Theme management |
-| EscuelaJS API | Products, categories, and authentication |
-| localStorage | Shopping cart persistence |
-| Git and GitHub | Version control |
-| Vercel | Planned deployment |
+| `/products` | Retrieve products |
+| `/categories` | Retrieve product categories |
+| `/products/:id` | Retrieve product details |
+| `/auth/login` | Authenticate a user |
+| `/auth/profile` | Retrieve authenticated profile information |
+| `/users/` | Register a user |
 
-## API Integration
+API availability and supported operations depend on the external service.
 
-**Base URL:** `https://api.escuelajs.co/api/v1`
-
-**Documentation:** https://api.escuelajs.co/docs
-
-### Products
-- `GET /products`
-- `GET /products/{id}`
-- `GET /products/slug/{slug}`
-- `GET /products/{id}/related`
-- `POST /products`
-- `PUT /products/{id}`
-
-### Categories
-- `GET /categories`
-- `GET /categories/{id}`
-- `GET /categories/slug/{slug}`
-- `GET /categories/{id}/products`
-- `POST /categories`
-- `PUT /categories/{id}`
-
-### Authentication and Users
-- `POST /users`
-- `POST /users/is-available`
-- `POST /auth/login`
-- `GET /auth/profile`
-- `POST /auth/refresh-token`
-- `GET /users`
-- `GET /users/{id}`
-
-Request bodies, response structures, and permissions will be verified against the official documentation.
-
-The application will use a centralized API service and handle failures without replacing missing data with fabricated products.
-
-**Shared API safety:** Existing shared products and categories will not be modified or deleted without explicit authorization. Write operations will be tested using isolated test records wherever possible.
-
-## Application Routes
-
-### Customer Routes
-
-| Route | Purpose |
-|---|---|
-| `/` | Homepage |
-| `/products` | Product discovery |
-| `/products/[id]` | Product details |
-| `/categories` | Category listing |
-| `/categories/[slug]` | Category products |
-| `/cart` | Shopping cart |
-| `/checkout` | Protected simulated checkout |
-| `/checkout/success` | Order confirmation |
-| `/login` | Login |
-| `/register` | Registration |
-| `/profile` | User profile |
-
-### Admin Routes
-
-| Route | Purpose |
-|---|---|
-| `/admin` | Dashboard overview |
-| `/admin/products` | Product management |
-| `/admin/products/new` | Create product |
-| `/admin/products/[id]` | Product details |
-| `/admin/products/[id]/edit` | Edit product |
-| `/admin/categories` | Category management |
-| `/admin/categories/new` | Create category |
-| `/admin/categories/[id]/edit` | Edit category |
-| `/admin/users` | User management |
-| `/admin/users/[id]` | User details |
-
-## Project Structure
-
-The following is the planned structure. Files and folders will be added as features are implemented.
-
-```text
-be-xpert-ecommerce/
-├── public/
-├── src/
-│   ├── app/
-│   ├── components/
-│   │   ├── admin/
-│   │   ├── auth/
-│   │   ├── cart/
-│   │   ├── categories/
-│   │   ├── layout/
-│   │   ├── products/
-│   │   └── ui/
-│   ├── contexts/
-│   ├── hooks/
-│   ├── lib/
-│   └── types/
-├── .env.example
-├── .gitignore
-├── package.json
-├── README.md
-└── tsconfig.json
-```
-
-## Getting Started
+## ⚙️ Getting Started
 
 ### Prerequisites
-- Node.js LTS
+
+- Node.js
 - npm
 - Git
-- Visual Studio Code or another code editor
 
-### Installation
-
-After cloning the GitHub repository:
+### 1. Clone the repository
 
 ```bash
 git clone YOUR_GITHUB_REPOSITORY_URL
+```
+
+Replace `YOUR_GITHUB_REPOSITORY_URL` with your actual GitHub repository URL.
+
+### 2. Open the project folder
+
+```bash
 cd be-xpert-ecommerce
+```
+
+### 3. Install dependencies
+
+```bash
 npm install
 ```
+
+### 4. Configure environment variables
 
 Create a `.env.local` file in the project root:
 
@@ -202,95 +107,91 @@ Create a `.env.local` file in the project root:
 NEXT_PUBLIC_API_URL=https://api.escuelajs.co/api/v1
 ```
 
-Do not commit `.env.local` or private credentials to GitHub.
+The application uses this value as the API base URL and falls back to the default EscuelaJS API URL if it is not set.
 
-Start the development server:
+Never put private API keys, secrets, or sensitive credentials in variables prefixed with `NEXT_PUBLIC_`.
+
+### 5. Start the development server
 
 ```bash
 npm run dev
 ```
 
-Open http://localhost:3000 in your browser.
+Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-### Available Scripts
+### 6. Build for production
 
 ```bash
-npm run dev
 npm run build
+```
+
+To run the production build locally:
+
+```bash
 npm run start
 ```
 
-Use `npm run lint` if that script is configured in `package.json`.
+## 📁 Main Application Areas
 
-## Testing Checklist
+The project uses the Next.js App Router. Its main application areas include:
 
-### Storefront
-- [ ] Homepage loads real API data.
-- [ ] Product search, filters, and sorting work.
-- [ ] Product details and related products load.
-- [ ] Missing products and images are handled.
+- `/` — Home page
+- `/products` — Product catalog
+- `/products/[id]` — Product details
+- `/categories` — Product categories
+- `/cart` — Shopping cart
+- `/checkout` — Checkout
+- `/login` — User login
+- `/register` — User registration
+- `/profile` — User profile
 
-### Cart and Checkout
-- [ ] Add, remove, and quantity controls work.
-- [ ] Cart totals are correct.
-- [ ] Cart persists after refresh.
-- [ ] Guest checkout redirects to login.
-- [ ] Checkout validates required fields.
-- [ ] Successful simulated checkout clears the cart.
-- [ ] Protected routes reject unauthenticated guests.
+Exact routes depend on the current files in the project.
 
-### Authentication
-- [ ] Registration validates and submits.
-- [ ] Login handles invalid credentials.
-- [ ] Profile data loads correctly.
-- [ ] Logout works.
-- [ ] Protected profile routes redirect guests.
+## 🔒 Authentication and Checkout
 
-### Admin Dashboard
-- [ ] Statistics use actual API data.
-- [ ] Product and category management work where supported.
-- [ ] User information respects API permissions.
-- [ ] Shared records are protected from unsafe modifications.
-- [ ] Authorization limitations are documented.
+The login page sends credentials to the API and stores the returned access token in `sessionStorage`.
 
-### Quality and Deployment
-- [ ] Mobile, tablet, and desktop layouts work.
-- [ ] Light, dark, and system themes work.
-- [ ] Loading, error, and empty states are implemented.
-- [ ] Accessibility is checked.
-- [ ] Production build succeeds.
-- [ ] Documentation is complete.
-- [ ] Deployment is tested.
+When a logged-out user attempts to access checkout, the application can redirect them to:
 
-## Security and Limitations
+`/login?next=/checkout`
 
-- The shopping cart is stored client-side in localStorage.
-- Checkout is simulated rather than a real payment transaction.
-- The public API does not automatically provide production-grade administrator authorization.
-- Client-side route protection alone is insufficient for production.
-- Passwords and tokens must not be exposed in the interface or logs.
-- API limitations will be documented honestly.
+After successful login, the user is redirected back to checkout. Users can also navigate to registration while preserving the checkout destination.
 
-## Deliverables
+**Security note:** Browser-side redirects improve the user experience but do not secure an API by themselves. Protected server-side operations must validate authentication and authorization independently.
 
-1. GitHub repository with complete source code.
-2. Working customer storefront.
-3. Admin dashboard within API capabilities.
-4. Project README and API documentation.
-5. Public deployment URL when available.
-6. Project presentation.
+## 🗺️ Project Goals
 
-## Project Links
+BE-XPERT Store is a learning and capstone project focused on building a complete e-commerce frontend and practicing:
 
-- **GitHub Repository:** To be added.
-- **Live Demo:** To be added.
-- **API Documentation:** https://api.escuelajs.co/docs
+- React components and state management
+- Next.js App Router
+- API integration
+- Authentication flows
+- Protected routes and redirects
+- Responsive UI design
+- Cart and checkout workflows
+- Git and GitHub collaboration
 
-## Author
+## 🔮 Future Improvements
 
-**Edlawit Tsegaye**  
-BE-XPERT Frontend Development — Individual Capstone Project
+Potential next steps include:
 
----
+- Product search, filtering, and sorting.
+- Improved product discovery and pagination.
+- Persistent cart synchronization for authenticated users.
+- Server-side authorization for protected operations.
+- Server-synchronized profile and avatar updates.
+- Order creation, order history, and payment integration.
+- Automated tests and accessibility improvements.
 
-*This README describes the requirements and planned implementation. Features will be marked complete only after implementation and testing.*
+## 👩‍💻 Author
+
+**Edlawit Tsegaye**
+
+Software Engineering Student | Full Stack Developer
+
+- GitHub: [@Edldev12](https://github.com/Edldev12)
+
+## 📄 License
+
+This project is intended for educational and portfolio purposes. Add a license file if you choose to distribute the project under a specific open-source license.
