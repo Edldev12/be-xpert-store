@@ -4,6 +4,9 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { SiteHeader } from "@/components/site-header"
 import { SiteFooter } from "@/components/site-footer"
+import { CartProvider } from "@/components/cart-provider"
+
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -33,13 +36,18 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          <div className="flex min-h-screen flex-col">
-            <SiteHeader />
-            <main className="flex-1 pb-20 md:pb-0">{children}</main>
-            <SiteFooter />
-          </div>
+          <CartProvider>
+            <div className="flex min-h-screen flex-col">
+              <SiteHeader />
+              <main className="flex-1 pb-20 md:pb-0">
+                {children}
+              </main>
+              <SiteFooter />
+            </div>
+          </CartProvider>
         </ThemeProvider>
       </body>
     </html>
   )
 }
+

@@ -11,7 +11,7 @@ export function ProductGridSkeleton({
     <div
       aria-label="Loading products"
       aria-busy="true"
-      className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+      className="grid grid-cols-2 gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4"
     >
       {Array.from({ length: count }, (_, index) => (
         <div
