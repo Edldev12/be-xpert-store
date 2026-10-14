@@ -8,7 +8,7 @@ import {
   updateCategory,
 } from "@/lib/api";
 import type { Category } from "@/types/product";
-
+import { useRouter } from "next/navigation";
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
@@ -20,6 +20,7 @@ export default function AdminCategoriesPage() {
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const router = useRouter();
 
   async function loadCategories() {
     try {
@@ -102,14 +103,6 @@ export default function AdminCategoriesPage() {
     } finally {
       setSaving(false);
     }
-  }
-
-  function handleEdit(category: Category) {
-    setEditingId(category.id);
-    setName(category.name);
-    setImage(category.image);
-    setError("");
-    setSuccess("");
   }
 
   async function handleDelete(category: Category) {
@@ -335,10 +328,9 @@ export default function AdminCategoriesPage() {
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
-                          onClick={() => {
-                            handleEdit(category);
-                            window.scrollTo({ top: 0, behavior: "smooth" });
-                          }}
+                          onClick={() =>
+                            router.push(`/admin/categories/${category.id}/edit`)
+                          }
                           className="rounded-md border px-3 py-1.5 hover:bg-muted"
                         >
                           Edit

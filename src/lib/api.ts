@@ -169,6 +169,7 @@ export async function createCategory(
   return response.json();
 }
 
+
 export async function updateCategory(
   id: number,
   category: Partial<Omit<Category, "id">>,
@@ -182,7 +183,12 @@ export async function updateCategory(
   });
 
   if (!response.ok) {
-    throw new Error("Failed to update category");
+    const errorMessage = await response.text();
+
+    throw new Error(
+      `Failed to update category (${response.status}): ${errorMessage || response.statusText
+      }`,
+    );
   }
 
   return response.json();
