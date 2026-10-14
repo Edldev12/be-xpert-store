@@ -140,3 +140,50 @@ export async function deleteProduct(id: number): Promise<void> {
     );
   }
 }
+
+export async function createCategory(
+  category: Omit<Category, "id">,
+): Promise<Category> {
+  const response = await fetch(`${API_URL} /categories/`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(category),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to create category");
+  }
+
+  return response.json();
+}
+
+export async function updateCategory(
+  id: number,
+  category: Partial<Omit<Category, "id">>,
+): Promise<Category> {
+  const response = await fetch(`${API_URL} /categories/${id} `, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(category),
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to update category");
+  }
+
+  return response.json();
+}
+
+export async function deleteCategory(id: number): Promise<void> {
+  const response = await fetch(`${API_URL} /categories/${id} `, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error("Failed to delete category");
+  }
+}
