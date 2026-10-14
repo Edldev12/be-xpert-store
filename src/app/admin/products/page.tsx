@@ -1,5 +1,5 @@
 "use client";
-
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   AlertCircle,
@@ -11,14 +11,15 @@ import {
 } from "lucide-react";
 import { getCategories, getProducts } from "@/lib/api";
 import type { Category, Product } from "@/types/product";
-
+import { deleteProduct } from "@/lib/api";
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-
+  const [deletingId, setDeletingId] = useState<number | null>(null);
+  const [deleteError, setDeleteError] = useState("");
   const loadProducts = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -80,7 +81,30 @@ export default function AdminProductsPage() {
       cancelled = true;
     };
   }, []);
+  async function handleDelete(productId: number, productTitle: string) {
+    const confirmed = window.confirm(
+      `Are you sure you want to delete "${productTitle}"?`,
+    );
 
+    if (!confirmed) return;
+
+    setDeletingId(productId);
+    setDeleteError("");
+
+    try {
+      await deleteProduct(productId);
+
+      setProducts((current) =>
+        current.filter((product) => product.id !== productId),
+      );
+    } catch (err) {
+      setDeleteError(
+        err instanceof Error ? err.message : "Failed to delete product.",
+      );
+    } finally {
+      setDeletingId(null);
+    }
+  }
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -210,7 +234,11 @@ export default function AdminProductsPage() {
               </div>
             </div>
           )}
-
+          {deleteError && (
+            <p role="alert" className="mb-4 text-sm text-red-600">
+              {deleteError}
+            </p>
+          )}
           {loading ? (
             <div className="flex min-h-64 items-center justify-center gap-3 text-sm text-slate-500">
               <LoaderCircle size={22} className="animate-spin" />
@@ -273,6 +301,27 @@ export default function AdminProductsPage() {
                       <td className="px-5 py-4 text-slate-500">
                         #{product.id}
                       </td>
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <Link
+                            href={`/admin/products/${product.id}/edit`}
+                            className="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                          >
+                            Edit
+                          </Link>
+
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(product.id, product.title)}
+                            disabled={deletingId === product.id}
+                            className="text-sm font-semibold text-red-600 hover:text-red-800 disabled:opacity-50"
+                          >
+                            {deletingId === product.id ? "Deleting..." : "Delete"}
+                          </button>
+                        </div>
+                      </td>
+
                     </tr>
                   ))}
                 </tbody>

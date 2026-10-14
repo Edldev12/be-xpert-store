@@ -93,3 +93,50 @@ export async function createProduct(product: {
 
   return response.json() as Promise<Product>;
 }
+
+export async function updateProduct(
+  id: number,
+  product: {
+    title: string;
+    price: number;
+    description: string;
+    images: string[];
+    categoryId: number;
+  },
+): Promise<Product> {
+  if (!Number.isInteger(id) || id < 1) {
+    throw new Error("Product ID must be a positive integer.");
+  }
+
+  const response = await fetch(`${API_URL}/products/${id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(product),
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to update product: ${response.status} ${response.statusText}`,
+    );
+  }
+
+  return response.json() as Promise<Product>;
+}
+
+export async function deleteProduct(id: number): Promise<void> {
+  if (!Number.isInteger(id) || id < 1) {
+    throw new Error("Product ID must be a positive integer.");
+  }
+
+  const response = await fetch(`${API_URL}/products/${id}`, {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    throw new Error(
+      `Failed to delete product: ${response.status} ${response.statusText}`,
+    );
+  }
+}
