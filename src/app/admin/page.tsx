@@ -3,7 +3,6 @@
 import {
   BarChart3,
   Bell,
-  Box,
   ChevronDown,
   CircleDollarSign,
   LayoutDashboard,
