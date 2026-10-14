@@ -1,16 +1,16 @@
-import Image from "next/image"
-import Link from "next/link"
-import { getCategories } from "@/lib/api"
-import { createCategorySlug } from "@/lib/slug"
-
-export const instant = false
-export default async function CategoriesPage() {
-  let categories
+import Image from "next/image";
+import Link from "next/link";
+import { Suspense } from "react";
+import { getCategories } from "@/lib/api";
+import { createCategorySlug } from "@/lib/slug";
+export const instant = false;
+async function CategoriesContent() {
+  let categories;
 
   try {
-    categories = await getCategories()
+    categories = await getCategories();
   } catch (error) {
-    console.error("Failed to load categories:", error)
+    console.error("Failed to load categories:", error);
 
     return (
       <section className="mx-auto max-w-7xl px-4 py-16 text-center">
@@ -25,7 +25,7 @@ export default async function CategoriesPage() {
           Browse All Products
         </Link>
       </section>
-    )
+    );
   }
 
   const validCategories = categories.filter(
@@ -34,8 +34,8 @@ export default async function CategoriesPage() {
       Number.isInteger(category.id) &&
       category.id > 0 &&
       typeof category.name === "string" &&
-      category.name.trim().length > 0
-  )
+      category.name.trim().length > 0,
+  );
 
   return (
     <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
@@ -101,5 +101,19 @@ export default async function CategoriesPage() {
         </div>
       )}
     </section>
-  )
+  );
+}
+
+export default function CategoriesPage() {
+  return (
+    <Suspense
+      fallback={
+        <section className="mx-auto max-w-7xl px-4 py-16 text-center">
+          Loading categories...
+        </section>
+      }
+    >
+      <CategoriesContent />
+    </Suspense>
+  );
 }

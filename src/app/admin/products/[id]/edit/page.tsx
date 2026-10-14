@@ -1,6 +1,6 @@
 import { Suspense } from "react";
 import EditProductForm from "./EditProductForm";
-
+export const instant = false;
 export default async function EditProductPage({
   params,
 }: {

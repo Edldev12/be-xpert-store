@@ -1,25 +1,18 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import {
-  createCategory,
-  deleteCategory,
-  getCategories,
-  updateCategory,
-} from "@/lib/api";
+import { useEffect, useState } from "react";
+import { deleteCategory, getCategories } from "@/lib/api";
 import type { Category } from "@/types/product";
 import { useRouter } from "next/navigation";
+
 export default function AdminCategoriesPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState("");
-  const [name, setName] = useState("");
-  const [image, setImage] = useState("");
-  const [editingId, setEditingId] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
-  const [saving, setSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
   const router = useRouter();
 
   async function loadCategories() {
@@ -42,69 +35,6 @@ export default function AdminCategoriesPage() {
     return () => window.clearTimeout(timer);
   }, []);
 
-  function resetForm() {
-    setName("");
-    setImage("");
-    setEditingId(null);
-  }
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError("");
-    setSuccess("");
-
-    const trimmedName = name.trim();
-    const trimmedImage = image.trim();
-
-    if (!trimmedName || !trimmedImage) {
-      setError("Please enter both a category name and image URL.");
-      return;
-    }
-
-    if (
-      !trimmedImage.startsWith("https://") &&
-      !trimmedImage.startsWith("http://")
-    ) {
-      setError("Please enter a valid image URL starting with http:// or https://.");
-      return;
-    }
-
-    setSaving(true);
-
-    try {
-      if (editingId !== null) {
-        const updated = await updateCategory(editingId, {
-          name: trimmedName,
-          image: trimmedImage,
-        });
-
-        setCategories((current) =>
-          current.map((category) =>
-            category.id === editingId ? updated : category,
-          ),
-        );
-
-        setSuccess("Category updated successfully.");
-      } else {
-        const created = await createCategory({
-          name: trimmedName,
-          image: trimmedImage,
-        });
-
-        setCategories((current) => [...current, created]);
-        setSuccess("Category created successfully.");
-      }
-
-      resetForm();
-    } catch {
-      setError(
-        "Unable to save the category. Please check the API connection and try again.",
-      );
-    } finally {
-      setSaving(false);
-    }
-  }
-
   async function handleDelete(category: Category) {
     const confirmed = window.confirm(
       `Are you sure you want to delete "${category.name}"?`,
@@ -123,10 +53,6 @@ export default function AdminCategoriesPage() {
         current.filter((item) => item.id !== category.id),
       );
 
-      if (editingId === category.id) {
-        resetForm();
-      }
-
       setSuccess("Category deleted successfully.");
     } catch (error) {
       console.error("Delete category error:", error);
@@ -144,8 +70,7 @@ export default function AdminCategoriesPage() {
       } else {
         setError(message || "Unable to delete the category.");
       }
-    }
-    finally {
+    } finally {
       setDeletingId(null);
     }
   }
@@ -156,13 +81,23 @@ export default function AdminCategoriesPage() {
 
   return (
     <main className="space-y-6 p-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">
-          Categories Management
-        </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Create, edit, search, and manage your product categories.
-        </p>
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">
+            Categories Management
+          </h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            Create, edit, search, and manage your product categories.
+          </p>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => router.push("/admin/categories/new")}
+          className="rounded-lg bg-primary px-4 py-2 font-medium text-primary-foreground"
+        >
+          Add Category
+        </button>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
@@ -179,84 +114,11 @@ export default function AdminCategoriesPage() {
         </div>
       </div>
 
-      <section className="rounded-xl border p-5">
-        <h2 className="mb-4 text-xl font-semibold">
-          {editingId !== null ? "Edit Category" : "Add New Category"}
-        </h2>
-
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid gap-4 md:grid-cols-2">
-            <div className="space-y-2">
-              <label htmlFor="category-name" className="text-sm font-medium">
-                Category Name
-              </label>
-              <input
-                id="category-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                placeholder="e.g. Electronics"
-                required
-                maxLength={100}
-                className="w-full rounded-lg border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <label htmlFor="category-image" className="text-sm font-medium">
-                Image URL
-              </label>
-              <input
-                id="category-image"
-                type="url"
-                value={image}
-                onChange={(event) => setImage(event.target.value)}
-                placeholder="https://example.com/image.jpg"
-                required
-                className="w-full rounded-lg border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-ring"
-              />
-            </div>
-          </div>
-
-          {image.trim() && (
-            <div className="space-y-2">
-              <p className="text-sm font-medium">Image Preview</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={image}
-                alt="Category preview"
-                className="h-24 w-24 rounded-lg border object-cover"
-              />
-            </div>
-          )}
-
-          <div className="flex flex-wrap gap-3">
-            <button
-              type="submit"
-              disabled={saving}
-              className="rounded-lg bg-primary px-5 py-2 font-medium text-primary-foreground disabled:opacity-50"
-            >
-              {saving
-                ? "Saving..."
-                : editingId !== null
-                  ? "Update Category"
-                  : "Create Category"}
-            </button>
-
-            {editingId !== null && (
-              <button
-                type="button"
-                onClick={resetForm}
-                className="rounded-lg border px-5 py-2 font-medium"
-              >
-                Cancel
-              </button>
-            )}
-          </div>
-        </form>
-      </section>
-
       {error && (
-        <p role="alert" className="rounded-lg border border-red-500 p-3 text-sm text-red-600">
+        <p
+          role="alert"
+          className="rounded-lg border border-red-500 p-3 text-sm text-red-600"
+        >
           {error}
         </p>
       )}
@@ -289,7 +151,7 @@ export default function AdminCategoriesPage() {
           <div className="rounded-xl border p-8 text-center">
             <p className="font-medium">No categories found</p>
             <p className="mt-1 text-sm text-muted-foreground">
-              Try another search or create a new category.
+              Try another search or add a category.
             </p>
           </div>
         ) : (
@@ -329,7 +191,9 @@ export default function AdminCategoriesPage() {
                         <button
                           type="button"
                           onClick={() =>
-                            router.push(`/admin/categories/${category.id}/edit`)
+                            router.push(
+                              `/admin/categories/${category.id}/edit`,
+                            )
                           }
                           className="rounded-md border px-3 py-1.5 hover:bg-muted"
                         >
@@ -342,7 +206,9 @@ export default function AdminCategoriesPage() {
                           disabled={deletingId === category.id}
                           className="rounded-md border border-red-500/40 px-3 py-1.5 text-red-600 hover:bg-red-500/10 disabled:opacity-50"
                         >
-                          {deletingId === category.id ? "Deleting..." : "Delete"}
+                          {deletingId === category.id
+                            ? "Deleting..."
+                            : "Delete"}
                         </button>
                       </div>
                     </td>
