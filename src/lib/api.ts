@@ -1,9 +1,10 @@
 
 import type { Category, Product, ProductQuery } from "@/types/product";
 
-const API_URL =
+const API_URL = (
   process.env.NEXT_PUBLIC_API_URL ??
-  "https://api.escuelajs.co/api/v1";
+  "https://api.escuelajs.co/api/v1"
+).trim().replace(/\/+$/, "");
 
 async function request<T>(endpoint: string): Promise<T> {
   const response = await fetch(`${API_URL}${endpoint}`);
@@ -48,9 +49,23 @@ export async function getProductById(id: number): Promise<Product> {
   return request<Product>(`/products/${id}`);
 }
 
+
+const ALLOWED_CATEGORY_NAMES = [
+  "hand bags",
+  "electronics",
+  "furniture",
+  "shoes",
+  "miscellaneous",
+];
+
 export async function getCategories(): Promise<Category[]> {
-  return request<Category[]>("/categories");
+  const categories = await request<Category[]>("/categories");
+
+  return categories.filter((category) =>
+    ALLOWED_CATEGORY_NAMES.includes(category.name.trim().toLowerCase()),
+  );
 }
+
 
 export async function getCategoryById(id: number): Promise<Category> {
   if (!Number.isInteger(id) || id < 1) {
@@ -144,7 +159,7 @@ export async function deleteProduct(id: number): Promise<void> {
 export async function createCategory(
   category: Omit<Category, "id">,
 ): Promise<Category> {
-  const response = await fetch(`${API_URL} /categories/`, {
+  const response = await fetch(`${API_URL}/categories/`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -163,7 +178,7 @@ export async function updateCategory(
   id: number,
   category: Partial<Omit<Category, "id">>,
 ): Promise<Category> {
-  const response = await fetch(`${API_URL} /categories/${id} `, {
+  const response = await fetch(`${API_URL}/categories/${id}`, {
     method: "PUT",
     headers: {
       "Content-Type": "application/json",
@@ -179,11 +194,28 @@ export async function updateCategory(
 }
 
 export async function deleteCategory(id: number): Promise<void> {
-  const response = await fetch(`${API_URL} /categories/${id} `, {
+  const response = await fetch(`${API_URL}/categories/${id}`, {
     method: "DELETE",
   });
 
   if (!response.ok) {
-    throw new Error("Failed to delete category");
+    const body = await response.json().catch(() => null);
+
+    if (
+      response.status === 400 &&
+      (
+        body?.code === "SQLITE_CONSTRAINT_FOREIGNKEY" ||
+        body?.message?.includes("FOREIGN KEY constraint failed")
+      )
+    ) {
+      throw new Error(
+        "This category is being used by other records and cannot be deleted.",
+      );
+    }
+
+    throw new Error(
+      body?.message ?? `Failed to delete category(${response.status}).`,
+    );
   }
 }
+

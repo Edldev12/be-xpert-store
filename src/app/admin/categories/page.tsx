@@ -135,9 +135,24 @@ export default function AdminCategoriesPage() {
       }
 
       setSuccess("Category deleted successfully.");
-    } catch {
-      setError("Unable to delete the category. Please try again.");
-    } finally {
+    } catch (error) {
+      console.error("Delete category error:", error);
+
+      const message =
+        error instanceof Error ? error.message : "";
+
+      if (
+        message.includes("FOREIGN KEY constraint failed") ||
+        message.includes("SQLITE_CONSTRAINT_FOREIGNKEY")
+      ) {
+        setError(
+          `Cannot delete "${category.name}" because products or other records may still use it. Keep this category or reassign those records first.`,
+        );
+      } else {
+        setError(message || "Unable to delete the category.");
+      }
+    }
+    finally {
       setDeletingId(null);
     }
   }
@@ -332,9 +347,7 @@ export default function AdminCategoriesPage() {
                           disabled={deletingId === category.id}
                           className="rounded-md border border-red-500/40 px-3 py-1.5 text-red-600 hover:bg-red-500/10 disabled:opacity-50"
                         >
-                          {deletingId === category.id
-                            ? "Deleting..."
-                            : "Delete"}
+                          {deletingId === category.id ? "Deleting..." : "Delete"}
                         </button>
                       </div>
                     </td>
