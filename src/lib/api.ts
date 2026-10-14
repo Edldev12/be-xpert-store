@@ -50,21 +50,16 @@ export async function getProductById(id: number): Promise<Product> {
 }
 
 
-const ALLOWED_CATEGORY_NAMES = [
-  "hand bags",
-  "electronics",
-  "furniture",
-  "shoes",
-  "miscellaneous",
-];
+const ALLOWED_CATEGORY_IDS = [1, 2, 3, 4, 5];
 
 export async function getCategories(): Promise<Category[]> {
   const categories = await request<Category[]>("/categories");
 
   return categories.filter((category) =>
-    ALLOWED_CATEGORY_NAMES.includes(category.name.trim().toLowerCase()),
+    ALLOWED_CATEGORY_IDS.includes(category.id),
   );
 }
+
 
 
 export async function getCategoryById(id: number): Promise<Category> {

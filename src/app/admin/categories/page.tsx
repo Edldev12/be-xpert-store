@@ -335,7 +335,10 @@ export default function AdminCategoriesPage() {
                       <div className="flex justify-end gap-2">
                         <button
                           type="button"
-                          onClick={() => handleEdit(category)}
+                          onClick={() => {
+                            handleEdit(category);
+                            window.scrollTo({ top: 0, behavior: "smooth" });
+                          }}
                           className="rounded-md border px-3 py-1.5 hover:bg-muted"
                         >
                           Edit
