@@ -93,6 +93,16 @@ export default function AdminOrdersPage() {
     setLoading(false);
   }
 
+  function updateOrderStatus(orderId: number, newStatus: string) {
+    setOrders((currentOrders) =>
+      currentOrders.map((order) =>
+        order.id === orderId
+          ? { ...order, status: newStatus }
+          : order,
+      ),
+    );
+  }
+
   return (
     <main className="min-h-screen bg-gray-50 p-6 text-gray-900 md:p-10">
       <div className="mx-auto max-w-7xl">
@@ -197,14 +207,31 @@ export default function AdminOrdersPage() {
                     <td className="px-6 py-4">
                       ${order.total.toFixed(2)}
                     </td>
+
                     <td className="px-6 py-4">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[order.status] ??
-                          "bg-gray-100 text-gray-700"
-                          }`}
-                      >
-                        {order.status}
-                      </span>
+                      <div className="flex flex-col gap-2">
+                        <span
+                          className={`w-fit rounded-full px-3 py-1 text-xs font-medium ${STATUS_STYLES[order.status] ??
+                            "bg-gray-100 text-gray-700"
+                            }`}
+                        >
+                          {order.status}
+                        </span>
+
+                        <select
+                          aria-label={`Update status for order ${order.id}`}
+                          value={order.status}
+                          onChange={(event) =>
+                            updateOrderStatus(order.id, event.target.value)
+                          }
+                          className="max-w-40 rounded-md border border-gray-300 bg-white px-2 py-2 text-xs"
+                        >
+                          <option value="Pending">Pending</option>
+                          <option value="Processing">Processing</option>
+                          <option value="Delivered">Delivered</option>
+                          <option value="Cancelled">Cancelled</option>
+                        </select>
+                      </div>
                     </td>
                   </tr>
                 ))}
