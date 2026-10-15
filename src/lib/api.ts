@@ -1,10 +1,14 @@
 
 import type { Category, Product, ProductQuery } from "@/types/product";
 
+
 const API_URL = (
   process.env.NEXT_PUBLIC_API_URL ??
   "https://api.escuelajs.co/api/v1"
-).trim().replace(/\/+$/, "");
+)
+  .trim()
+  .replace(/\/+$/, "");
+
 
 async function request<T>(endpoint: string): Promise<T> {
   const response = await fetch(`${API_URL}${endpoint}`, {
