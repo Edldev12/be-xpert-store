@@ -42,6 +42,7 @@ export default function CheckoutPage() {
   const [form, setForm] = useState<CheckoutForm>(initialForm)
   const [errors, setErrors] = useState<Partial<CheckoutForm>>({})
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState("")
 
   function validateForm() {
     const nextErrors: Partial<CheckoutForm> = {}
@@ -82,17 +83,55 @@ export default function CheckoutPage() {
     }
   }
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault()
 
-    if (items.length === 0 || !validateForm()) return
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
 
-    setSubmitting(true)
+    if (submitting || items.length === 0 || !validateForm()) return;
 
-    // Simulated checkout only: no payment or backend order is created.
-    clearCart()
-    router.push("/checkout/success")
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customer: {
+            fullName: form.fullName.trim(),
+            email: form.email.trim(),
+            phone: form.phone.trim(),
+            address: form.address.trim(),
+            city: form.city.trim(),
+          },
+          items: items.map(({ product, quantity }) => ({
+            productId: product.id,
+            quantity,
+          })),
+        }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Could not save your order.");
+      }
+
+      clearCart();
+      router.push("/checkout/success");
+    } catch (error) {
+      setSubmitError(
+        error instanceof Error
+          ? error.message
+          : "Something went wrong. Please try again."
+      );
+    } finally {
+      setSubmitting(false);
+    }
   }
+
 
   if (items.length === 0) {
     return (
@@ -300,17 +339,24 @@ export default function CheckoutPage() {
             </div>
           </div>
 
+
+          {submitError && (
+            <p role="alert" className="mt-4 text-sm text-destructive">
+              {submitError}
+            </p>
+          )}
+
           <Button
             type="submit"
             className="mt-6 w-full"
             disabled={submitting}
           >
-            {submitting ? "Completing checkout..." : "Place order"}
+            {submitting ? "Saving order..." : "Place order"}
           </Button>
 
+
           <p className="mt-4 text-xs leading-5 text-muted-foreground">
-            This is a simulated checkout. No real payment, shipping
-            arrangement, or backend order creation takes place.
+            Your order will be saved to our database. No real payment is processed.
           </p>
         </aside>
       </form>

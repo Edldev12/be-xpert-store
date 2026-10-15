@@ -57,14 +57,13 @@ export default function LoginFormContent() {
     submitting.current = true;
     setLoading(true);
     setError("");
-
     const apiUrl = (
       process.env.NEXT_PUBLIC_API_URL ??
       "https://api.escuelajs.co/api/v1"
     ).replace(/\/+$/, "");
 
     try {
-      const response = await fetch(`${apiUrl} /auth/login`, {
+      const response = await fetch(`${apiUrl}/auth/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
