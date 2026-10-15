@@ -3,8 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { getCategories } from "@/lib/api";
 import { createCategorySlug } from "@/lib/slug";
+import { connection } from "next/server";
 export const instant = false;
 async function CategoriesContent() {
+  await connection();
   let categories;
 
   try {

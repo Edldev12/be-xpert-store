@@ -1,5 +1,5 @@
 import Link from "next/link"
-
+import { connection } from "next/server";
 import { getCategories, getProducts } from "@/lib/api"
 import { ProductCard } from "@/components/product-card"
 import { createCategorySlug } from "@/lib/slug"
@@ -8,6 +8,8 @@ import type { Category, Product } from "@/types/product"
 export const instant = false
 
 export default async function Home() {
+  await connection();
+
   let products: Product[] = []
   let categories: Category[] = []
   let productsError = false

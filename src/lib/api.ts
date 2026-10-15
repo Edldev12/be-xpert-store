@@ -7,7 +7,10 @@ const API_URL = (
 ).trim().replace(/\/+$/, "");
 
 async function request<T>(endpoint: string): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`);
+  const response = await fetch(`${API_URL}${endpoint}`, {
+    cache: "no-store",
+    signal: AbortSignal.timeout(15000),
+  });
 
   if (!response.ok) {
     throw new Error(
