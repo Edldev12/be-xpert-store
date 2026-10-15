@@ -80,7 +80,7 @@ export function AdminShell({
 
           {sidebarCollapsed && (
             <span className="text-2xl font-bold text-indigo-400">
-              B
+              EDL
             </span>
           )}
 

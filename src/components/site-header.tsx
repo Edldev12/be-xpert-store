@@ -78,7 +78,7 @@ export function SiteHeader() {
             </div>
 
             <span className="text-lg font-bold tracking-tight">
-              Edl-Store <span className="text-primary">Store</span>
+              Edl-Store <span className="text-primary"></span>
             </span>
           </Link>
 
