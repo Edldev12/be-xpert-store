@@ -11,12 +11,14 @@ import {
   Search,
 } from "lucide-react";
 
+type OrderStatus = "Pending" | "Processing" | "Delivered" | "Cancelled";
+
 type Order = {
   id: number;
   customerName: string;
   email: string;
   date: string;
-  status: "Pending" | "Processing" | "Delivered" | "Cancelled";
+  status: OrderStatus;
   total: number;
 };
 
@@ -24,10 +26,17 @@ type ApiOrder = {
   id: number;
   customer_name: string;
   email: string;
-  status: Order["status"];
+  status: OrderStatus;
   total: number | string;
   created_at: string;
 };
+
+const statuses: OrderStatus[] = [
+  "Pending",
+  "Processing",
+  "Delivered",
+  "Cancelled",
+];
 
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState<Order[]>([]);
@@ -35,6 +44,8 @@ export default function AdminOrdersPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [reloadKey, setReloadKey] = useState(0);
+  const [updatingId, setUpdatingId] = useState<number | null>(null);
+  const [notice, setNotice] = useState("");
 
   useEffect(() => {
     const controller = new AbortController();
@@ -51,9 +62,7 @@ export default function AdminOrdersPage() {
         }
 
         const response = await fetch("/api/admin/orders", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
           cache: "no-store",
           signal: controller.signal,
         });
@@ -78,25 +87,64 @@ export default function AdminOrdersPage() {
         );
       } catch (err) {
         if (controller.signal.aborted) return;
-
         setError(
           err instanceof Error ? err.message : "Something went wrong."
         );
       } finally {
-        if (!controller.signal.aborted) {
-          setLoading(false);
-        }
+        if (!controller.signal.aborted) setLoading(false);
       }
     }
 
     void fetchOrders();
-
     return () => controller.abort();
   }, [reloadKey]);
 
+  async function updateOrderStatus(orderId: number, status: OrderStatus) {
+    const token = sessionStorage.getItem("be-xpert-access-token");
+
+    if (!token) {
+      setError("Please log in again.");
+      return;
+    }
+
+    setUpdatingId(orderId);
+    setError("");
+    setNotice("");
+
+    try {
+      const response = await fetch(`/api/admin/orders/${orderId}`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Could not update order status.");
+      }
+
+      setOrders((previous) =>
+        previous.map((order) =>
+          order.id === orderId ? { ...order, status } : order
+        )
+      );
+
+      setNotice(`Order #${orderId} updated to ${status}.`);
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : "Could not update order status."
+      );
+    } finally {
+      setUpdatingId(null);
+    }
+  }
+
   const filteredOrders = orders.filter((order) => {
     const query = search.toLowerCase();
-
     return (
       String(order.id).includes(query) ||
       order.customerName.toLowerCase().includes(query) ||
@@ -150,6 +198,18 @@ export default function AdminOrdersPage() {
           />
         </section>
 
+        {notice && (
+          <p role="status" className="rounded-lg bg-green-100 p-3 text-sm text-green-800">
+            {notice}
+          </p>
+        )}
+
+        {error && (
+          <p role="alert" className="rounded-lg bg-red-100 p-3 text-sm text-red-700">
+            {error}
+          </p>
+        )}
+
         <section className="rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-gray-900">
           <div className="border-b border-gray-200 p-5 dark:border-gray-800">
             <div className="relative max-w-md">
@@ -170,16 +230,6 @@ export default function AdminOrdersPage() {
             <div className="flex items-center justify-center gap-3 p-12 text-gray-500">
               <LoaderCircle size={20} className="animate-spin" />
               Loading orders...
-            </div>
-          ) : error ? (
-            <div className="p-8 text-center">
-              <p className="text-red-500">{error}</p>
-              <button
-                onClick={() => setReloadKey((key) => key + 1)}
-                className="mt-4 rounded-lg bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
-              >
-                Try again
-              </button>
             </div>
           ) : filteredOrders.length === 0 ? (
             <div className="p-12 text-center text-gray-500">
@@ -204,9 +254,7 @@ export default function AdminOrdersPage() {
                 <tbody className="divide-y divide-gray-100 dark:divide-gray-800">
                   {filteredOrders.map((order) => (
                     <tr key={order.id}>
-                      <td className="px-5 py-4 font-medium">
-                        #{order.id}
-                      </td>
+                      <td className="px-5 py-4 font-medium">#{order.id}</td>
                       <td className="px-5 py-4">{order.customerName}</td>
                       <td className="px-5 py-4">{order.email}</td>
                       <td className="whitespace-nowrap px-5 py-4 text-gray-500">
@@ -216,18 +264,30 @@ export default function AdminOrdersPage() {
                         ${order.total.toFixed(2)}
                       </td>
                       <td className="px-5 py-4">
-                        <span
-                          className={`inline-flex rounded-full px-3 py-1 text-xs font-medium ${order.status === "Delivered"
-                            ? "bg-green-100 text-green-700"
-                            : order.status === "Cancelled"
-                              ? "bg-red-100 text-red-700"
-                              : order.status === "Processing"
-                                ? "bg-blue-100 text-blue-700"
-                                : "bg-amber-100 text-amber-700"
-                            }`}
+                        <select
+                          aria-label={`Status for order ${order.id}`}
+                          value={order.status}
+                          disabled={updatingId === order.id}
+                          onChange={(event) =>
+                            void updateOrderStatus(
+                              order.id,
+                              event.target.value as OrderStatus
+                            )
+                          }
+                          className="rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm text-gray-900 disabled:opacity-60 dark:border-gray-700 dark:bg-gray-800 dark:text-white"
                         >
-                          {order.status}
-                        </span>
+                          {statuses.map((status) => (
+                            <option key={status} value={status}>
+                              {status}
+                            </option>
+                          ))}
+                        </select>
+                        {updatingId === order.id && (
+                          <LoaderCircle
+                            size={14}
+                            className="ml-2 inline animate-spin"
+                          />
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -238,8 +298,7 @@ export default function AdminOrdersPage() {
         </section>
 
         <p className="text-sm text-gray-500">
-          Order records are loaded from your Supabase database. Status changes
-          are not enabled yet.
+          Status changes are verified by the admin API and saved to Supabase.
         </p>
       </div>
     </main>
