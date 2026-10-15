@@ -1,5 +1,5 @@
-
 import { NextResponse } from "next/server";
+import { connection } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
 const API_URL = (
@@ -8,6 +8,7 @@ const API_URL = (
 ).replace(/\/+$/, "");
 
 export async function GET(request: Request) {
+  await connection();
   try {
     const authorization = request.headers.get("authorization");
     const token = authorization?.match(/^Bearer\s+(.+)$/i)?.[1];
