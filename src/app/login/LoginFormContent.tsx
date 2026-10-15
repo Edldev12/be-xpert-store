@@ -127,6 +127,19 @@ export default function LoginFormContent() {
 
       // Administrators always go to the admin orders dashboard.
       if (profile.role === "admin") {
+        const sessionResponse = await fetch("/api/auth/session", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ accessToken }),
+        });
+
+        if (!sessionResponse.ok) {
+          setError("Unable to create your admin session. Please try again.");
+          return;
+        }
+
         router.replace("/admin/orders");
         return;
       }

@@ -129,14 +129,6 @@ export function SiteHeader() {
                   <LogIn className="mr-2 size-4" />
                   Login
                 </Link>
-
-                <Link
-                  href="/register"
-                  className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-                >
-                  <UserPlus className="mr-2 size-4" />
-                  Register
-                </Link>
               </>
             )}
           </div>
