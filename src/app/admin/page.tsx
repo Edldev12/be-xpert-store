@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  BarChart3,
   CircleDollarSign,
   Package,
   Search,
@@ -10,7 +9,7 @@ import {
   Users,
 } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const stats = [
   {
@@ -39,70 +38,20 @@ const stats = [
   },
 ];
 
-const orders = [
-  {
-    id: "#BX-1024",
-    customer: "Abebe Kebede",
-    product: "Wireless Headphones",
-    amount: "$89.00",
-    status: "Delivered",
-  },
-  {
-    id: "#BX-1023",
-    customer: "Sara Ahmed",
-    product: "Smart Watch",
-    amount: "$120.00",
-    status: "Processing",
-  },
-  {
-    id: "#BX-1022",
-    customer: "Daniel Bekele",
-    product: "Laptop Stand",
-    amount: "$45.00",
-    status: "Pending",
-  },
-  {
-    id: "#BX-1021",
-    customer: "Hana Tesfaye",
-    product: "Mechanical Keyboard",
-    amount: "$75.00",
-    status: "Delivered",
-  },
-  {
-    id: "#BX-1020",
-    customer: "Mikael Alemu",
-    product: "USB-C Hub",
-    amount: "$35.00",
-    status: "Processing",
-  },
-];
+type Order = {
+  id: number | string;
+  customer_name: string | null;
+  email: string | null;
+  status: string;
+  total: number | string;
+  created_at: string;
+};
 
-const quickActions = [
-  {
-    label: "Manage products",
-    description: "Review your product catalog",
-    icon: Package,
-    href: "/admin/products",
-  },
-  {
-    label: "Manage categories",
-    description: "Organize your product catalog",
-    icon: BarChart3,
-    href: "/admin/categories",
-  },
-  {
-    label: "Review orders",
-    description: "Check customer purchases",
-    icon: ShoppingCart,
-    href: "/admin/orders",
-  },
-  {
-    label: "View customers",
-    description: "Review your customer base",
-    icon: Users,
-    href: "/admin/customers",
-  },
-];
+const formatAmount = (amount: number | string) =>
+  `$${Number(amount).toFixed(2)}`;
+
+const formatStatus = (status: string) =>
+  status.charAt(0).toUpperCase() + status.slice(1).toLowerCase();
 
 const monthlyRevenue = [
   { month: "Apr", height: 42 },
@@ -116,9 +65,61 @@ const monthlyRevenue = [
 
 export default function AdminPage() {
   const [search, setSearch] = useState("");
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loadingOrders, setLoadingOrders] = useState(true);
+  const [ordersError, setOrdersError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadOrders() {
+      try {
+        const token = sessionStorage.getItem("be-xpert-access-token");
+
+        if (!token) {
+          throw new Error("Please log in again to view orders.");
+        }
+
+        const response = await fetch("/api/admin/orders", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          cache: "no-store",
+        });
+
+        const result = await response.json();
+
+        if (!response.ok) {
+          throw new Error(result.error || "Failed to load orders.");
+        }
+
+        if (!cancelled) {
+          setOrders(Array.isArray(result.orders) ? result.orders : []);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          setOrdersError(
+            error instanceof Error
+              ? error.message
+              : "Failed to load orders.",
+          );
+        }
+      } finally {
+        if (!cancelled) {
+          setLoadingOrders(false);
+        }
+      }
+    }
+
+    loadOrders();
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredOrders = orders.filter((order) =>
-    `${order.id} ${order.customer} ${order.product}`
+    `${order.id} ${order.customer_name ?? ""} ${order.email ?? ""} ${order.status}`
       .toLowerCase()
       .includes(search.toLowerCase()),
   );
@@ -228,49 +229,9 @@ export default function AdminPage() {
           </div>
 
           <p className="mt-4 text-xs text-slate-400 dark:text-slate-500">
-            Illustrative chart — connect real sales data to display
-            actual revenue.
+            Illustrative chart — connect real sales data to display actual
+            revenue.
           </p>
-        </article>
-
-        <article className="rounded-2xl border border-slate-200/80 bg-white p-5 shadow-sm dark:border-slate-700 dark:bg-slate-900 sm:p-6">
-          <h3 className="text-lg font-bold">Quick actions</h3>
-
-          <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-            Common store management tasks
-          </p>
-
-          <div className="mt-5 space-y-3">
-            {quickActions.map((action) => {
-              const Icon = action.icon;
-
-              return (
-                <Link
-                  key={action.href}
-                  href={action.href}
-                  className="flex w-full items-center gap-3 rounded-xl border border-slate-100 p-4 text-left transition hover:border-indigo-200 hover:bg-indigo-50/50 dark:border-slate-700 dark:hover:border-indigo-500 dark:hover:bg-indigo-500/10"
-                >
-                  <div className="rounded-lg bg-slate-100 p-2.5 text-slate-700 dark:bg-slate-800 dark:text-slate-200">
-                    <Icon size={19} />
-                  </div>
-
-                  <div className="min-w-0 flex-1">
-                    <p className="text-sm font-semibold">
-                      {action.label}
-                    </p>
-
-                    <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
-                      {action.description}
-                    </p>
-                  </div>
-
-                  <span className="text-lg text-slate-400 dark:text-slate-500">
-                    ›
-                  </span>
-                </Link>
-              );
-            })}
-          </div>
         </article>
       </section>
 
@@ -314,68 +275,107 @@ export default function AdminPage() {
               <tr>
                 <th className="px-6 py-4 font-semibold">Order ID</th>
                 <th className="px-6 py-4 font-semibold">Customer</th>
-                <th className="px-6 py-4 font-semibold">Product</th>
+                <th className="px-6 py-4 font-semibold">Order Date</th>
                 <th className="px-6 py-4 font-semibold">Amount</th>
                 <th className="px-6 py-4 font-semibold">Status</th>
               </tr>
             </thead>
 
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {filteredOrders.map((order) => (
-                <tr
-                  key={order.id}
-                  className="transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
-                >
-                  <td className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">
-                    {order.id}
-                  </td>
-
-                  <td className="px-6 py-4">{order.customer}</td>
-
-                  <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
-                    {order.product}
-                  </td>
-
-                  <td className="px-6 py-4 font-semibold">
-                    {order.amount}
-                  </td>
-
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${order.status === "Delivered"
-                        ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
-                        : order.status === "Processing"
-                          ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
-                          : "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
-                        }`}
-                    >
-                      {order.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-
-              {filteredOrders.length === 0 && (
+              {loadingOrders ? (
                 <tr>
                   <td
                     colSpan={5}
-                    className="px-6 py-10 text-center text-slate-500 dark:text-slate-400"
+                    className="px-6 py-10 text-center text-slate-500"
                   >
-                    No matching orders found.
+                    Loading recent orders...
                   </td>
                 </tr>
+              ) : ordersError ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-red-500"
+                  >
+                    {ordersError}
+                  </td>
+                </tr>
+              ) : filteredOrders.length === 0 ? (
+                <tr>
+                  <td
+                    colSpan={5}
+                    className="px-6 py-10 text-center text-slate-500"
+                  >
+                    {orders.length === 0
+                      ? "No orders have been placed yet."
+                      : "No matching orders found."}
+                  </td>
+                </tr>
+              ) : (
+                filteredOrders.slice(0, 5).map((order) => {
+                  const status = formatStatus(order.status || "pending");
+                  const normalizedStatus = status.toLowerCase();
+
+                  return (
+                    <tr
+                      key={order.id}
+                      className="transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                    >
+                      <td className="px-6 py-4 font-semibold text-slate-700 dark:text-slate-200">
+                        #{order.id}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <div className="font-medium">
+                          {order.customer_name || "Unknown customer"}
+                        </div>
+
+                        {order.email && (
+                          <div className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+                            {order.email}
+                          </div>
+                        )}
+                      </td>
+
+                      <td className="px-6 py-4 text-slate-600 dark:text-slate-300">
+                        {order.created_at
+                          ? new Date(order.created_at).toLocaleDateString()
+                          : "—"}
+                      </td>
+
+                      <td className="px-6 py-4 font-semibold">
+                        {formatAmount(order.total)}
+                      </td>
+
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${normalizedStatus === "delivered"
+                            ? "bg-emerald-50 text-emerald-700 dark:bg-emerald-500/15 dark:text-emerald-300"
+                            : normalizedStatus === "processing"
+                              ? "bg-blue-50 text-blue-700 dark:bg-blue-500/15 dark:text-blue-300"
+                              : "bg-amber-50 text-amber-700 dark:bg-amber-500/15 dark:text-amber-300"
+                            }`}
+                        >
+                          {status}
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
 
         <div className="border-t border-slate-100 px-6 py-4 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
-          Showing {filteredOrders.length} of {orders.length} sample orders
+          {loadingOrders
+            ? "Loading orders..."
+            : `Showing ${Math.min(filteredOrders.length, 5)} of ${filteredOrders.length} matching orders`}
         </div>
       </section>
 
       <footer className="pb-2 text-center text-xs text-slate-400 dark:text-slate-500">
-        Edl-Store Admin Dashboard · Initial prototype
+        Edl-Store Admin Dashboard
       </footer>
     </main>
   );
