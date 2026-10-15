@@ -261,6 +261,7 @@ export default function AdminProductsPage() {
                     <th className="px-5 py-4 font-semibold">Category</th>
                     <th className="px-5 py-4 font-semibold">Price</th>
                     <th className="px-5 py-4 font-semibold">Product ID</th>
+                    <th className="px-6 py-4 font-semibold">Actions</th>
                   </tr>
                 </thead>
 
