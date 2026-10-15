@@ -3,18 +3,23 @@
 import { useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-
-interface LoginForm {
-  email: string;
-  password: string;
-}
-
 interface LoginResponse {
   access_token?: string;
   refresh_token?: string;
   token?: string;
   message?: string | string[];
 }
+
+interface UserProfile {
+  id?: number;
+  email?: string;
+  role?: string;
+}
+interface LoginForm {
+  email: string;
+  password: string;
+}
+
 
 export default function LoginFormContent() {
   const router = useRouter();
@@ -93,6 +98,22 @@ export default function LoginFormContent() {
         return;
       }
 
+
+      // Fetch the authenticated user's actual profile and role.
+      const profileResponse = await fetch(`${apiUrl}/auth/profile`, {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+        cache: "no-store",
+      });
+
+      if (!profileResponse.ok) {
+        setError("Could not verify your account. Please try again.");
+        return;
+      }
+
+      const profile: UserProfile = await profileResponse.json();
+
       sessionStorage.setItem("be-xpert-access-token", accessToken);
 
       if (data?.refresh_token) {
@@ -104,17 +125,24 @@ export default function LoginFormContent() {
 
       window.dispatchEvent(new Event("auth-change"));
 
-      // Return to the requested internal page after login.
+      // Administrators always go to the admin orders dashboard.
+      if (profile.role === "admin") {
+        router.replace("/admin/orders");
+        return;
+      }
+
+      // Customers must not be redirected to admin pages.
       const requestedPath = searchParams.get("next");
 
-      const nextPath =
+      const safeCustomerPath =
         requestedPath?.startsWith("/") &&
           !requestedPath.startsWith("//") &&
-          !requestedPath.includes("\\")
+          !requestedPath.includes("\\") &&
+          !requestedPath.startsWith("/admin")
           ? requestedPath
           : "/";
 
-      router.replace(nextPath);
+      router.replace(safeCustomerPath);
     } catch {
       setError(
         "Unable to connect to the login service. Check your internet connection and try again."
