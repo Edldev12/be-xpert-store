@@ -3,10 +3,10 @@
 import {
   BarChart3,
   Bell,
-  ChevronDown,
   LayoutDashboard,
   Menu,
   Package,
+  LogOut,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
@@ -16,7 +16,7 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
 
 const navigation = [
@@ -37,7 +37,7 @@ export function AdminShell({
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-
+  const router = useRouter();
   const currentPage =
     navigation.find((item) =>
       item.href === "/admin"
@@ -171,22 +171,31 @@ export function AdminShell({
             </div>
 
             {!sidebarCollapsed && (
-              <>
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-semibold">
-                    Administrator
-                  </p>
-                  <p className="text-xs text-slate-400">
-                    Store management
-                  </p>
-                </div>
-                <ChevronDown
-                  size={16}
-                  className="shrink-0 text-slate-400"
-                />
-              </>
+              <div className="min-w-0 flex-1">
+                <p className="truncate text-sm font-semibold">
+                  Administrator
+                </p>
+                <p className="text-xs text-slate-400">
+                  Store management
+                </p>
+              </div>
             )}
           </div>
+          <button
+            type="button"
+            onClick={() => {
+              sessionStorage.removeItem("be-xpert-access-token");
+              router.push("/login");
+            }}
+            title="Log Out"
+            aria-label="Log Out"
+            className={`mt-3 flex w-full items-center rounded-xl py-3 text-sm font-medium text-slate-400 transition hover:bg-red-500/10 hover:text-red-400 ${sidebarCollapsed ? "justify-center px-2" : "gap-3 px-3"
+              }`}
+          >
+            <LogOut size={20} className="shrink-0" />
+            {!sidebarCollapsed && <span>Log Out</span>}
+          </button>
+
         </div>
       </aside>
 
