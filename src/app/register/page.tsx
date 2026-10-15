@@ -10,10 +10,7 @@ interface RegistrationForm {
   email: string
   password: string
   confirmPassword: string
-}
-
-interface ApiUser {
-  email?: string
+  phone: string
 }
 
 export default function RegisterPage() {
@@ -25,7 +22,8 @@ export default function RegisterPage() {
     email: "",
     password: "",
     confirmPassword: "",
-  })
+    phone: "",
+  });
 
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
@@ -40,7 +38,6 @@ export default function RegisterPage() {
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    // Prevent multiple requests, including rapid repeated clicks.
     if (submitting.current) return
 
     const name = form.name.trim()
@@ -61,6 +58,11 @@ export default function RegisterPage() {
       return
     }
 
+    if (form.password.length > 128) {
+      setError("Password must contain no more than 128 characters.")
+      return
+    }
+
     if (form.password !== form.confirmPassword) {
       setError("Passwords do not match.")
       return
@@ -71,47 +73,8 @@ export default function RegisterPage() {
     setError("")
     setSuccess("")
 
-    const apiUrl = (
-      process.env.NEXT_PUBLIC_API_URL ??
-      "https://api.escuelajs.co/api/v1"
-    ).replace(/\/+$/, "")
-
     try {
-      // Check whether the email already exists.
-      const usersResponse = await fetch(
-        `${apiUrl}/users?email=${encodeURIComponent(email)}`,
-        { cache: "no-store" }
-      )
-
-      if (!usersResponse.ok) {
-        throw new Error(
-          "Could not check email availability. Please try again."
-        )
-      }
-
-      const usersData: unknown = await usersResponse.json()
-
-      if (!Array.isArray(usersData)) {
-        throw new Error(
-          "The server returned an unexpected response. Please try again."
-        )
-      }
-
-      const existingUsers = usersData as ApiUser[]
-
-      const emailExists = existingUsers.some(
-        (user) => user.email?.trim().toLowerCase() === email
-      )
-
-      if (emailExists) {
-        setError(
-          "This email is already registered. Please use another email or sign in."
-        )
-        return
-      }
-
-      // Register only after the email check succeeds.
-      const registrationResponse = await fetch(`${apiUrl}/users/`, {
+      const response = await fetch("/api/auth/register", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -120,29 +83,18 @@ export default function RegisterPage() {
           name,
           email,
           password: form.password,
-          avatar: "https://i.imgur.com/4ZQZ4WR.jpeg",
+          phone: form.phone,
         }),
       })
 
-      const registrationData: unknown = await registrationResponse
-        .json()
-        .catch(() => null)
+      const data: { error?: string; message?: string } =
+        await response.json()
 
-      if (!registrationResponse.ok) {
-        const message =
-          registrationData &&
-            typeof registrationData === "object" &&
-            "message" in registrationData &&
-            typeof registrationData.message === "string"
-            ? registrationData.message
-            : "Registration failed. Please try again."
-
-        throw new Error(message)
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed. Please try again.")
       }
 
       setSuccess("Registration successful! Redirecting to login...")
-
-      // Keep submission locked until navigation.
       router.push("/login")
     } catch (err) {
       setError(
@@ -204,7 +156,23 @@ export default function RegisterPage() {
               className="h-11 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
             />
           </div>
-
+          <div className="space-y-2">
+            <label htmlFor="phone" className="text-sm font-medium">
+              Phone number
+            </label>
+            <input
+              id="phone"
+              name="phone"
+              type="tel"
+              value={form.phone}
+              onChange={(e) =>
+                setForm((prev) => ({ ...prev, phone: e.target.value }))
+              }
+              placeholder="Enter your phone number"
+              autoComplete="tel"
+              className="w-full rounded-md border px-3 py-2"
+            />
+          </div>
           <div className="space-y-2">
             <label htmlFor="password" className="text-sm font-medium">
               Password
@@ -218,6 +186,7 @@ export default function RegisterPage() {
               onChange={(event) => updateField("password", event.target.value)}
               placeholder="At least 6 characters"
               minLength={6}
+              maxLength={128}
               required
               disabled={loading}
               className="h-11 w-full rounded-md border bg-background px-3 text-sm outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-60"
