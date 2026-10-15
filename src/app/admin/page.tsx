@@ -377,7 +377,7 @@ export default function AdminPage() {
       </section>
 
       <footer className="pb-2 text-center text-xs text-slate-400">
-        BE-XPERT Admin Dashboard · Initial prototype
+        Edl-Store Admin Dashboard · Initial prototype
       </footer>
     </main>
   );

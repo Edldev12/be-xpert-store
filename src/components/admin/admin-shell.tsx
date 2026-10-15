@@ -70,7 +70,7 @@ export function AdminShell({
           {!sidebarCollapsed && (
             <div>
               <h1 className="text-xl font-bold tracking-wide">
-                BE-XPERT<span className="text-indigo-400">.</span>
+                Edl-Store<span className="text-indigo-400">.</span>
               </h1>
               <p className="mt-1 text-xs text-slate-400">
                 Administration

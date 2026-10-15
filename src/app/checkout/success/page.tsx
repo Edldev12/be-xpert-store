@@ -14,7 +14,7 @@ export default function CheckoutSuccessPage() {
 
       <p className="mt-3 max-w-lg text-muted-foreground">
         Your simulated checkout has been completed successfully. Thank you for
-        shopping with BE-XPERT Store!
+        shopping with Edl-Store!
       </p>
 
       <section

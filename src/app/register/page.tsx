@@ -164,7 +164,7 @@ export default function RegisterPage() {
         </h1>
 
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Register for your BE-XPERT Store account.
+          Register for your Edl-Store account.
         </p>
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">

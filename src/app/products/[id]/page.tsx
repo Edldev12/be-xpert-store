@@ -33,22 +33,22 @@ export async function generateMetadata({
   const productId = Number(id)
 
   if (!Number.isInteger(productId) || productId < 1) {
-    return { title: "Product Not Found | BE-XPERT Store" }
+    return { title: "Product Not Found | Edl-Store" }
   }
 
   try {
     const product = await getProductById(productId)
 
     if (!isValidProduct(product)) {
-      return { title: "Product Not Found | BE-XPERT Store" }
+      return { title: "Product Not Found | Edl-Store" }
     }
 
     return {
-      title: `${product.title} | BE-XPERT Store`,
+      title: `${product.title} | Edl-Store`,
       description: product.description,
     }
   } catch {
-    return { title: "Product Not Found | BE-XPERT Store" }
+    return { title: "Product Not Found | Edl-Store" }
   }
 }
 

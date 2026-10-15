@@ -70,7 +70,7 @@ export function SiteHeader() {
           <Link
             href="/"
             onClick={closeMenu}
-            aria-label="BE-XPERT Store home"
+            aria-label="Edl-Store home"
             className="flex items-center gap-2"
           >
             <div className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
@@ -78,7 +78,7 @@ export function SiteHeader() {
             </div>
 
             <span className="text-lg font-bold tracking-tight">
-              BE-XPERT <span className="text-primary">Store</span>
+              Edl-Store <span className="text-primary">Store</span>
             </span>
           </Link>
 

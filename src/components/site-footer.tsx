@@ -9,7 +9,7 @@ export function SiteFooter() {
         <div className="flex flex-col gap-6 sm:flex-row sm:items-center sm:justify-between">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <ShoppingBag className="h-5 w-5 text-primary" />
-            BE-XPERT Store
+            Edl-Store
           </Link>
 
           <nav
@@ -31,7 +31,7 @@ export function SiteFooter() {
         <Separator className="my-6" />
 
         <p className="text-sm text-muted-foreground">
-          © 2026 BE-XPERT Store. Built for the Frontend Development Capstone.
+          © 2026 Edl-Store. Built for the Frontend Development Capstone.
         </p>
       </div>
     </footer>

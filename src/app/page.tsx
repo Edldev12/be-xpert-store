@@ -55,7 +55,7 @@ export default async function Home() {
       {/* Store Introduction */}
       <section className="rounded-2xl border bg-card p-6 sm:p-10">
         <p className="text-sm font-semibold text-primary">
-          Welcome to BE-XPERT Store
+          Welcome to Edl-Store
         </p>
 
         <h1 className="mt-3 max-w-2xl text-3xl font-bold tracking-tight sm:text-4xl">

@@ -13,7 +13,7 @@ interface StoreSettings {
 }
 
 const DEFAULT_SETTINGS: StoreSettings = {
-  storeName: "BE-XPERT",
+  storeName: "Edl-Store",
   email: "support@bexpert.com",
   phone: "+251 911 000 000",
   currency: "USD",

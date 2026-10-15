@@ -136,7 +136,7 @@ export default function LoginFormContent() {
         </h1>
 
         <p className="mt-2 text-center text-sm text-muted-foreground">
-          Sign in to your BE-XPERT Store account.
+          Sign in to your Edl-Store account.
         </p>
 
         {isCheckoutLogin && (

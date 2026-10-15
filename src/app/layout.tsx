@@ -16,8 +16,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BE-XPERT Store",
-  description: "Discover products and shop online with BE-XPERT Store.",
+  title: "Edl-Store",
+  description: "Discover products and shop online with Edl-Store.",
 };
 
 export default function RootLayout({

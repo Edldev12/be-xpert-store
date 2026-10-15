@@ -1,6 +1,6 @@
-# BE-XPERT Store 🛍️
+# Edl-Store 🛍️
 
-A modern, responsive e-commerce web application built with Next.js and React. BE-XPERT Store lets users browse products, explore categories, view product details, manage a shopping cart, register, log in, and access their profile.
+A modern, responsive e-commerce web application built with Next.js and React. Edl-Store lets users browse products, explore categories, view product details, manage a shopping cart, register, log in, and access their profile.
 
 ## 🚀 Features
 
@@ -161,7 +161,7 @@ After successful login, the user is redirected back to checkout. Users can also 
 
 ## 🗺️ Project Goals
 
-BE-XPERT Store is a learning and capstone project focused on building a complete e-commerce frontend and practicing:
+Edl-Store is a learning and capstone project focused on building a complete e-commerce frontend and practicing:
 
 - React components and state management
 - Next.js App Router
