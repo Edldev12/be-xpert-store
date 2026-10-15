@@ -1,4 +1,5 @@
 "use client";
+
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
@@ -9,9 +10,9 @@ import {
   RefreshCw,
   Search,
 } from "lucide-react";
-import { getCategories, getProducts } from "@/lib/api";
+import { deleteProduct, getCategories, getProducts } from "@/lib/api";
 import type { Category, Product } from "@/types/product";
-import { deleteProduct } from "@/lib/api";
+
 export default function AdminProductsPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -20,6 +21,7 @@ export default function AdminProductsPage() {
   const [error, setError] = useState("");
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [deleteError, setDeleteError] = useState("");
+
   const loadProducts = useCallback(async () => {
     setLoading(true);
     setError("");
@@ -46,27 +48,23 @@ export default function AdminProductsPage() {
   useEffect(() => {
     let cancelled = false;
 
-    async function fetchInitialProducts() {
+    async function fetchProducts() {
       setLoading(true);
       setError("");
 
       try {
-        const [productData, categoryData] = await Promise.all([
-          getProducts({ limit: 50, offset: 0 }),
+        const [productsData, categoriesData] = await Promise.all([
+          getProducts(),
           getCategories(),
         ]);
 
         if (!cancelled) {
-          setProducts(productData);
-          setCategories(categoryData);
+          setProducts(productsData);
+          setCategories(categoriesData);
         }
-      } catch (err) {
+      } catch {
         if (!cancelled) {
-          setError(
-            err instanceof Error
-              ? err.message
-              : "Unable to load products. Please try again.",
-          );
+          setError("Failed to load products. Please try again.");
         }
       } finally {
         if (!cancelled) {
@@ -75,7 +73,7 @@ export default function AdminProductsPage() {
       }
     }
 
-    void fetchInitialProducts();
+    void fetchProducts();
 
     return () => {
       cancelled = true;
@@ -105,6 +103,7 @@ export default function AdminProductsPage() {
       setDeletingId(null);
     }
   }
+
   const filteredProducts = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -119,68 +118,82 @@ export default function AdminProductsPage() {
   }, [products, search]);
 
   return (
-    <main className="min-h-screen bg-slate-50 p-4 text-slate-900 sm:p-8">
+    <main className="min-h-screen bg-slate-50 p-4 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100 sm:p-8">
       <div className="mx-auto max-w-7xl space-y-6">
+        {/* Page header */}
         <header className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <p className="text-sm font-medium text-indigo-600">
+            <p className="text-sm font-medium text-indigo-600 dark:text-indigo-400">
               Admin / Products
             </p>
+
             <h1 className="mt-2 text-3xl font-bold tracking-tight">
               Product Management
             </h1>
-            <p className="mt-2 text-sm text-slate-500">
+
+            <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
               View and search your store&apos;s product catalog.
             </p>
           </div>
 
-          <button
-            type="button"
-            disabled
-            title="Product creation will be implemented in the next step."
-            className="inline-flex cursor-not-allowed items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white opacity-60"
+          <Link
+            href="/admin/products/new"
+            className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white transition hover:bg-indigo-700"
           >
             <Plus size={18} />
             Add product
-          </button>
+          </Link>
         </header>
 
+        {/* Statistics */}
         <section className="grid gap-4 sm:grid-cols-3">
-          <article className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="flex items-center gap-3 text-slate-500">
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+            <div className="flex items-center gap-3 text-slate-500 dark:text-slate-400">
               <Package size={20} />
               <span className="text-sm">Loaded products</span>
             </div>
+
             <p className="mt-3 text-3xl font-bold">{products.length}</p>
-            <p className="mt-1 text-xs text-slate-500">
+
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Products retrieved from the API
             </p>
           </article>
 
-          <article className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="text-sm text-slate-500">Categories</div>
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              Categories
+            </div>
+
             <p className="mt-3 text-3xl font-bold">{categories.length}</p>
-            <p className="mt-1 text-xs text-slate-500">
+
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Categories available from the API
             </p>
           </article>
 
-          <article className="rounded-2xl border border-slate-200 bg-white p-5">
-            <div className="text-sm text-slate-500">Search results</div>
+          <article className="rounded-2xl border border-slate-200 bg-white p-5 dark:border-slate-700 dark:bg-slate-900">
+            <div className="text-sm text-slate-500 dark:text-slate-400">
+              Search results
+            </div>
+
             <p className="mt-3 text-3xl font-bold">
               {filteredProducts.length}
             </p>
-            <p className="mt-1 text-xs text-slate-500">
+
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
               Matching loaded products
             </p>
           </article>
         </section>
 
-        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
-          <div className="flex flex-col gap-4 border-b border-slate-100 p-5 sm:flex-row sm:items-center sm:justify-between">
+        {/* Products table */}
+        <section className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm dark:border-slate-700 dark:bg-slate-900">
+          <div className="flex flex-col gap-4 border-b border-slate-100 p-5 dark:border-slate-700 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <h2 className="text-lg font-bold">All products</h2>
-              <p className="mt-1 text-sm text-slate-500">
+
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Showing up to 50 products from the API.
               </p>
             </div>
@@ -191,12 +204,14 @@ export default function AdminProductsPage() {
                   size={18}
                   className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"
                 />
+
                 <input
                   type="search"
                   value={search}
                   onChange={(event) => setSearch(event.target.value)}
                   placeholder="Search products..."
-                  className="w-full rounded-xl border border-slate-200 py-2.5 pl-10 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100"
+                  aria-label="Search products"
+                  className="w-full rounded-xl border border-slate-200 bg-white py-2.5 pl-10 pr-3 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-950 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:ring-indigo-500/20"
                 />
               </div>
 
@@ -205,7 +220,8 @@ export default function AdminProductsPage() {
                 onClick={() => void loadProducts()}
                 disabled={loading}
                 aria-label="Refresh products"
-                className="rounded-xl border border-slate-200 p-3 transition hover:bg-slate-50 disabled:opacity-50"
+                title="Refresh products"
+                className="rounded-xl border border-slate-200 p-3 transition hover:bg-slate-50 disabled:opacity-50 dark:border-slate-700 dark:hover:bg-slate-800"
               >
                 <RefreshCw
                   size={18}
@@ -218,12 +234,14 @@ export default function AdminProductsPage() {
           {error && (
             <div
               role="alert"
-              className="m-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700"
+              className="m-5 flex items-start gap-3 rounded-xl border border-red-200 bg-red-50 p-4 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300"
             >
               <AlertCircle size={20} className="shrink-0" />
+
               <div className="flex-1">
                 <p className="font-semibold">Could not load products</p>
                 <p className="mt-1">{error}</p>
+
                 <button
                   type="button"
                   onClick={() => void loadProducts()}
@@ -234,28 +252,38 @@ export default function AdminProductsPage() {
               </div>
             </div>
           )}
+
           {deleteError && (
-            <p role="alert" className="mb-4 text-sm text-red-600">
+            <p
+              role="alert"
+              className="mx-5 mb-4 text-sm text-red-600 dark:text-red-400"
+            >
               {deleteError}
             </p>
           )}
+
           {loading ? (
-            <div className="flex min-h-64 items-center justify-center gap-3 text-sm text-slate-500">
+            <div className="flex min-h-64 items-center justify-center gap-3 text-sm text-slate-500 dark:text-slate-400">
               <LoaderCircle size={22} className="animate-spin" />
               Loading products...
             </div>
           ) : !error && filteredProducts.length === 0 ? (
             <div className="px-6 py-16 text-center">
-              <Package size={36} className="mx-auto text-slate-300" />
+              <Package
+                size={36}
+                className="mx-auto text-slate-300 dark:text-slate-600"
+              />
+
               <p className="mt-4 font-semibold">No products found</p>
-              <p className="mt-1 text-sm text-slate-500">
+
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
                 Try another product name, category, or ID.
               </p>
             </div>
           ) : !error ? (
             <div className="overflow-x-auto">
               <table className="w-full min-w-[720px] text-left text-sm">
-                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500">
+                <thead className="bg-slate-50 text-xs uppercase tracking-wide text-slate-500 dark:bg-slate-800 dark:text-slate-300">
                   <tr>
                     <th className="px-5 py-4 font-semibold">Product</th>
                     <th className="px-5 py-4 font-semibold">Category</th>
@@ -265,9 +293,12 @@ export default function AdminProductsPage() {
                   </tr>
                 </thead>
 
-                <tbody className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                   {filteredProducts.map((product) => (
-                    <tr key={product.id} className="hover:bg-slate-50">
+                    <tr
+                      key={product.id}
+                      className="transition hover:bg-slate-50 dark:hover:bg-slate-800/60"
+                    >
                       <td className="px-5 py-4">
                         <div className="flex items-center gap-3">
                           {product.images?.[0] ? (
@@ -275,10 +306,10 @@ export default function AdminProductsPage() {
                             <img
                               src={product.images[0]}
                               alt={product.title}
-                              className="h-12 w-12 rounded-lg border border-slate-200 bg-white object-contain"
+                              className="h-12 w-12 rounded-lg border border-slate-200 bg-white object-contain dark:border-slate-700"
                             />
                           ) : (
-                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100">
+                            <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300">
                               <Package size={20} />
                             </div>
                           )}
@@ -290,7 +321,7 @@ export default function AdminProductsPage() {
                       </td>
 
                       <td className="px-5 py-4">
-                        <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700">
+                        <span className="rounded-full bg-indigo-50 px-3 py-1 text-xs font-medium text-indigo-700 dark:bg-indigo-500/15 dark:text-indigo-300">
                           {product.category.name}
                         </span>
                       </td>
@@ -299,7 +330,7 @@ export default function AdminProductsPage() {
                         ${product.price.toFixed(2)}
                       </td>
 
-                      <td className="px-5 py-4 text-slate-500">
+                      <td className="px-5 py-4 text-slate-500 dark:text-slate-400">
                         #{product.id}
                       </td>
 
@@ -307,22 +338,25 @@ export default function AdminProductsPage() {
                         <div className="flex items-center gap-3">
                           <Link
                             href={`/admin/products/${product.id}/edit`}
-                            className="text-sm font-semibold text-indigo-600 hover:text-indigo-800"
+                            className="text-sm font-semibold text-indigo-600 hover:text-indigo-800 dark:text-indigo-400 dark:hover:text-indigo-300"
                           >
                             Edit
                           </Link>
 
                           <button
                             type="button"
-                            onClick={() => handleDelete(product.id, product.title)}
+                            onClick={() =>
+                              void handleDelete(product.id, product.title)
+                            }
                             disabled={deletingId === product.id}
-                            className="text-sm font-semibold text-red-600 hover:text-red-800 disabled:opacity-50"
+                            className="text-sm font-semibold text-red-600 hover:text-red-800 disabled:opacity-50 dark:text-red-400 dark:hover:text-red-300"
                           >
-                            {deletingId === product.id ? "Deleting..." : "Delete"}
+                            {deletingId === product.id
+                              ? "Deleting..."
+                              : "Delete"}
                           </button>
                         </div>
                       </td>
-
                     </tr>
                   ))}
                 </tbody>
@@ -331,7 +365,7 @@ export default function AdminProductsPage() {
           ) : null}
 
           {!loading && !error && (
-            <div className="border-t border-slate-100 px-5 py-4 text-xs text-slate-500">
+            <div className="border-t border-slate-100 px-5 py-4 text-xs text-slate-500 dark:border-slate-700 dark:text-slate-400">
               Showing {filteredProducts.length} of {products.length} loaded
               products
             </div>

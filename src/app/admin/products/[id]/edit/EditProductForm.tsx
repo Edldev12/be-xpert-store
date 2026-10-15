@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
@@ -62,9 +61,7 @@ export default function EditProductForm({
       } catch (err) {
         if (!cancelled) {
           setError(
-            err instanceof Error
-              ? err.message
-              : "Failed to load product.",
+            err instanceof Error ? err.message : "Failed to load product.",
           );
         }
       } finally {
@@ -113,9 +110,13 @@ export default function EditProductForm({
     }
 
     try {
-      new URL(imageUrl.trim());
+      const url = new URL(imageUrl.trim());
+
+      if (!["http:", "https:"].includes(url.protocol)) {
+        throw new Error("Invalid URL protocol");
+      }
     } catch {
-      setError("Enter a valid image URL.");
+      setError("Enter a valid HTTP or HTTPS image URL.");
       return;
     }
 
@@ -136,199 +137,193 @@ export default function EditProductForm({
       router.refresh();
     } catch (err) {
       setError(
-        err instanceof Error
-          ? err.message
-          : "Failed to update product.",
+        err instanceof Error ? err.message : "Failed to update product.",
       );
     } finally {
       setSaving(false);
     }
   }
 
+  const inputClass =
+    "w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none placeholder:text-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100 dark:placeholder:text-slate-500 dark:focus:border-indigo-400 dark:focus:ring-indigo-500/20";
+
+  const labelClass =
+    "mb-2 block text-sm font-medium text-slate-700 dark:text-slate-200";
+
   if (loading) {
     return (
-      <div className="flex min-h-64 items-center justify-center">
+      <main className="flex min-h-64 items-center justify-center bg-slate-50 text-slate-700 dark:bg-slate-950 dark:text-slate-200">
         <LoaderCircle className="mr-2 h-5 w-5 animate-spin" />
         <span>Loading product...</span>
-      </div>
+      </main>
     );
   }
 
   return (
-    <div className="mx-auto max-w-3xl p-6">
-      <Link
-        href="/admin/products"
-        className="mb-6 inline-flex items-center gap-2 text-sm text-gray-500 hover:text-gray-900"
-      >
-        <ArrowLeft className="h-4 w-4" />
-        Back to Products
-      </Link>
-
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold">Edit Product</h1>
-        <p className="mt-2 text-sm text-gray-500">
-          Update the product information below.
-        </p>
-      </div>
-
-      {error && (
-        <div
-          role="alert"
-          className="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700"
+    <main className="min-h-screen bg-slate-50 px-5 py-8 text-slate-900 dark:bg-slate-950 dark:text-slate-100 sm:px-8">
+      <div className="mx-auto max-w-3xl">
+        <Link
+          href="/admin/products"
+          className="mb-6 inline-flex items-center gap-2 text-sm font-medium text-slate-600 hover:text-indigo-600 dark:text-slate-400 dark:hover:text-indigo-400"
         >
-          {error}
-        </div>
-      )}
+          <ArrowLeft className="h-4 w-4" />
+          Back to Products
+        </Link>
 
-      {success && (
-        <div
-          role="status"
-          className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700"
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold">Edit Product</h1>
+          <p className="mt-2 text-sm text-slate-500 dark:text-slate-400">
+            Update the product information below.
+          </p>
+        </div>
+
+        {error && (
+          <div
+            role="alert"
+            className="mb-5 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900 dark:bg-red-950/50 dark:text-red-300"
+          >
+            {error}
+          </div>
+        )}
+
+        {success && (
+          <div
+            role="status"
+            className="mb-5 rounded-lg border border-green-200 bg-green-50 p-3 text-sm text-green-700 dark:border-green-900 dark:bg-green-950/50 dark:text-green-300"
+          >
+            {success}
+          </div>
+        )}
+
+        <form
+          onSubmit={handleSubmit}
+          className="space-y-6 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 sm:p-8"
         >
-          {success}
-        </div>
-      )}
+          <div>
+            <label htmlFor="title" className={labelClass}>
+              Product Title
+            </label>
+            <input
+              id="title"
+              name="title"
+              type="text"
+              required
+              maxLength={120}
+              value={title}
+              onChange={(event) => setTitle(event.target.value)}
+              placeholder="Enter product title"
+              className={inputClass}
+            />
+          </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="space-y-6 rounded-xl border border-gray-200 bg-white p-6 shadow-sm"
-      >
-        <div>
-          <label
-            htmlFor="title"
-            className="mb-2 block text-sm font-medium"
-          >
-            Product Title
-          </label>
-          <input
-            id="title"
-            name="title"
-            type="text"
-            required
-            value={title}
-            onChange={(event) => setTitle(event.target.value)}
-            placeholder="Enter product title"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
+          <div>
+            <label htmlFor="price" className={labelClass}>
+              Price ($)
+            </label>
+            <input
+              id="price"
+              name="price"
+              type="number"
+              min="0.01"
+              step="0.01"
+              required
+              value={price}
+              onChange={(event) => setPrice(event.target.value)}
+              placeholder="Enter product price"
+              className={inputClass}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="price"
-            className="mb-2 block text-sm font-medium"
-          >
-            Price ($)
-          </label>
-          <input
-            id="price"
-            name="price"
-            type="number"
-            min="0.01"
-            step="0.01"
-            required
-            value={price}
-            onChange={(event) => setPrice(event.target.value)}
-            placeholder="Enter product price"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
+          <div>
+            <label htmlFor="category" className={labelClass}>
+              Category
+            </label>
+            <select
+              id="category"
+              name="category"
+              required
+              value={categoryId}
+              onChange={(event) => setCategoryId(event.target.value)}
+              className={inputClass}
+            >
+              <option value="">Select a category</option>
+              {categories.map((category) => (
+                <option key={category.id} value={category.id}>
+                  {category.name}
+                </option>
+              ))}
+            </select>
+          </div>
 
-        <div>
-          <label
-            htmlFor="category"
-            className="mb-2 block text-sm font-medium"
-          >
-            Category
-          </label>
-          <select
-            id="category"
-            name="category"
-            required
-            value={categoryId}
-            onChange={(event) => setCategoryId(event.target.value)}
-            className="w-full rounded-lg border border-gray-300 bg-white px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          >
-            <option value="">Select a category</option>
-            {categories.map((category) => (
-              <option key={category.id} value={category.id}>
-                {category.name}
-              </option>
-            ))}
-          </select>
-        </div>
+          <div>
+            <label htmlFor="description" className={labelClass}>
+              Description
+            </label>
+            <textarea
+              id="description"
+              name="description"
+              required
+              rows={5}
+              value={description}
+              onChange={(event) => setDescription(event.target.value)}
+              placeholder="Describe your product"
+              className={`${inputClass} resize - y`}
+            />
+          </div>
 
-        <div>
-          <label
-            htmlFor="description"
-            className="mb-2 block text-sm font-medium"
-          >
-            Description
-          </label>
-          <textarea
-            id="description"
-            name="description"
-            required
-            rows={5}
-            value={description}
-            onChange={(event) => setDescription(event.target.value)}
-            placeholder="Describe your product"
-            className="w-full resize-y rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
-        </div>
+          <div>
+            <label htmlFor="imageUrl" className={labelClass}>
+              Product Image URL
+            </label>
+            <input
+              id="imageUrl"
+              name="imageUrl"
+              type="url"
+              required
+              value={imageUrl}
+              onChange={(event) => setImageUrl(event.target.value)}
+              placeholder="https://example.com/product.jpg"
+              className={inputClass}
+            />
 
-        <div>
-          <label
-            htmlFor="imageUrl"
-            className="mb-2 block text-sm font-medium"
-          >
-            Product Image URL
-          </label>
-          <input
-            id="imageUrl"
-            name="imageUrl"
-            type="url"
-            required
-            value={imageUrl}
-            onChange={(event) => setImageUrl(event.target.value)}
-            placeholder="https://example.com/product.jpg"
-            className="w-full rounded-lg border border-gray-300 px-4 py-3 outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100"
-          />
-
-          {imageUrl && (
-            <div className="mt-4">
-              <p className="mb-2 text-sm text-gray-500">Image preview</p>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={imageUrl}
-                alt="Product preview"
-                className="h-40 w-40 rounded-lg border border-gray-200 object-cover"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-          <button
-            type="submit"
-            disabled={saving}
-            className="inline-flex items-center justify-center gap-2 rounded-lg bg-blue-600 px-5 py-3 font-medium text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-60"
-          >
-            {saving ? (
-              <LoaderCircle className="h-5 w-5 animate-spin" />
-            ) : (
-              <Save className="h-5 w-5" />
+            {imageUrl && (
+              <div className="mt-4">
+                <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+                  Image preview
+                </p>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt="Product preview"
+                  className="h-40 w-40 rounded-lg border border-slate-200 object-cover dark:border-slate-700"
+                />
+              </div>
             )}
-            {saving ? "Saving..." : "Save Changes"}
-          </button>
+          </div>
 
-          <Link
-            href="/admin/products"
-            className="inline-flex items-center justify-center rounded-lg border border-gray-300 px-5 py-3 font-medium hover:bg-gray-50"
-          >
-            Cancel
-          </Link>
-        </div>
-      </form>
-    </div>
+          <div className="flex flex-col gap-3 border-t border-slate-100 pt-6 dark:border-slate-800 sm:flex-row">
+            <button
+              type="submit"
+              disabled={saving}
+              className="inline-flex items-center justify-center gap-2 rounded-xl bg-indigo-600 px-5 py-3 font-medium text-white hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {saving ? (
+                <LoaderCircle className="h-5 w-5 animate-spin" />
+              ) : (
+                <Save className="h-5 w-5" />
+              )}
+              {saving ? "Saving..." : "Save Changes"}
+            </button>
+
+            <Link
+              href="/admin/products"
+              className="inline-flex items-center justify-center rounded-xl border border-slate-300 px-5 py-3 font-medium text-slate-700 hover:bg-slate-50 dark:border-slate-700 dark:text-slate-200 dark:hover:bg-slate-800"
+            >
+              Cancel
+            </Link>
+          </div>
+        </form>
+      </div>
+    </main>
   );
 }

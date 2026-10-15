@@ -1,73 +1,59 @@
-"use client"
+"use client";
 
-import { useSyncExternalStore } from "react"
-import { useTheme } from "next-themes"
-import { Monitor, Moon, Sun } from "lucide-react"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { useSyncExternalStore } from "react";
+import { useTheme } from "next-themes";
+import { Monitor, Moon, Sun } from "lucide-react";
 
-function subscribe() {
-  return () => { }
-}
-
-function useIsMounted() {
-  return useSyncExternalStore(
-    subscribe,
-    () => true,
-    () => false,
-  )
-}
+const emptySubscribe = () => () => { };
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
 
 export function ThemeToggle() {
-  const { setTheme, resolvedTheme } = useTheme()
-  const mounted = useIsMounted()
+  const { theme, setTheme } = useTheme();
 
-  if (!mounted) {
-    return (
-      <button
-        type="button"
-        aria-label="Choose theme"
-        disabled
-        className="inline-flex size-10 items-center justify-center rounded-md border opacity-50"
-      >
-        <Sun className="size-4" />
-      </button>
-    )
-  }
+  const mounted = useSyncExternalStore(
+    emptySubscribe,
+    getClientSnapshot,
+    getServerSnapshot,
+  );
+
+  const buttonClass = (active: boolean) =>
+    `rounded-lg p-2 transition ${active
+      ? "bg-indigo-100 text-indigo-700 dark:bg-indigo-500/20 dark:text-indigo-300"
+      : "text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800"
+    }`;
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger
-        aria-label="Choose theme"
-        className="inline-flex size-10 items-center justify-center rounded-md border bg-background transition-colors hover:bg-accent hover:text-accent-foreground"
+    <div className="flex items-center gap-1 rounded-xl border border-slate-200 bg-white p-1 dark:border-slate-700 dark:bg-slate-900">
+      <button
+        type="button"
+        onClick={() => setTheme("light")}
+        aria-label="Light theme"
+        title="Light theme"
+        className={buttonClass(mounted && theme === "light")}
       >
-        {resolvedTheme === "dark" ? (
-          <Moon className="size-4" />
-        ) : (
-          <Sun className="size-4" />
-        )}
-      </DropdownMenuTrigger>
+        <Sun size={18} />
+      </button>
 
-      <DropdownMenuContent align="end">
-        <DropdownMenuItem onClick={() => setTheme("light")}>
-          <Sun className="mr-2 size-4" />
-          Light
-        </DropdownMenuItem>
+      <button
+        type="button"
+        onClick={() => setTheme("dark")}
+        aria-label="Dark theme"
+        title="Dark theme"
+        className={buttonClass(mounted && theme === "dark")}
+      >
+        <Moon size={18} />
+      </button>
 
-        <DropdownMenuItem onClick={() => setTheme("dark")}>
-          <Moon className="mr-2 size-4" />
-          Dark
-        </DropdownMenuItem>
-
-        <DropdownMenuItem onClick={() => setTheme("system")}>
-          <Monitor className="mr-2 size-4" />
-          System
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
-  )
+      <button
+        type="button"
+        onClick={() => setTheme("system")}
+        aria-label="System theme"
+        title="System theme"
+        className={buttonClass(mounted && theme === "system")}
+      >
+        <Monitor size={18} />
+      </button>
+    </div>
+  );
 }

@@ -18,6 +18,7 @@ import {
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useState } from "react";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const navigation = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/admin" },
@@ -47,7 +48,7 @@ export function AdminShell({
     )?.label ?? "Dashboard";
 
   return (
-    <div className="min-h-screen w-full bg-slate-50 text-slate-900">
+    <div className="min-h-screen w-full bg-slate-50 text-slate-900 transition-colors dark:bg-slate-950 dark:text-slate-100">
       {sidebarOpen && (
         <button
           aria-label="Close navigation"
@@ -203,18 +204,18 @@ export function AdminShell({
         className={`min-h-screen w-full transition-[padding] duration-200 ${sidebarCollapsed ? "lg:pl-20" : "lg:pl-64"
           }`}
       >
-        <header className="sticky top-0 z-30 flex h-20 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md sm:px-8">
+        <header className="sticky top-0 z-30 flex h-20 items-center justify-between gap-3 border-b border-slate-200 bg-white/90 px-4 backdrop-blur-md transition-colors dark:border-slate-800 dark:bg-slate-950/90 sm:px-8">
           <div className="flex min-w-0 items-center gap-3">
             <button
               onClick={() => setSidebarOpen(true)}
               aria-label="Open navigation"
-              className="rounded-lg p-2 transition hover:bg-slate-100 lg:hidden"
+              className="rounded-lg p-2 transition hover:bg-slate-100 dark:hover:bg-slate-800 lg:hidden"
             >
               <Menu size={22} />
             </button>
 
             <div className="min-w-0">
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-slate-500 dark:text-slate-400">
                 Workspace / Admin
               </p>
               <h2 className="truncate text-lg font-bold">
@@ -223,17 +224,20 @@ export function AdminShell({
             </div>
           </div>
 
-          <button
-            type="button"
-            aria-label="Notifications"
-            title="Notifications"
-            className="relative rounded-xl border border-slate-200 p-2.5 transition hover:bg-slate-50"
-          >
-            <Bell size={19} />
-            <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500" />
-          </button>
-        </header>
+          <div className="flex shrink-0 items-center gap-3">
+            <ThemeToggle />
 
+            <button
+              type="button"
+              aria-label="Notifications"
+              title="Notifications"
+              className="relative rounded-xl border border-slate-200 p-2.5 transition hover:bg-slate-50 dark:border-slate-700 dark:hover:bg-slate-800"
+            >
+              <Bell size={19} />
+              <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-rose-500" />
+            </button>
+          </div>
+        </header>
         <div className="w-full">{children}</div>
       </div>
     </div>
