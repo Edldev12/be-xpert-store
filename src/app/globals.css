@@ -121,10 +121,28 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
+
   html {
     @apply font-sans;
+  }
+}
+
+html,
+body {
+  max-width: 100%;
+  overflow-x: clip;
+}
+
+@media (max-width: 767px) {
+
+  html,
+  body {
+    width: 100%;
+    max-width: 100%;
+    overflow-x: hidden;
   }
 }

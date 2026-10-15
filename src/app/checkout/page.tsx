@@ -91,12 +91,18 @@ export default function CheckoutPage() {
 
     setSubmitting(true);
     setSubmitError("");
+    const token = sessionStorage.getItem("be-xpert-access-token");
 
+    if (!token) {
+      router.push("/login?next=/checkout");
+      return;
+    }
     try {
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           customer: {

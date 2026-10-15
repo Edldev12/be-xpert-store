@@ -48,7 +48,7 @@ export async function GET(request: Request) {
     // Retrieve registered customers from Supabase.
     const { data, error } = await supabaseAdmin
       .from("customers")
-      .select("id, external_user_id, name, email, phone, role, status, created_at")
+      .select("id, external_user_id, name, email, role, status, created_at")
       .order("created_at", { ascending: false });
 
     if (error) {
